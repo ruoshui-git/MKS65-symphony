@@ -7,7 +7,7 @@
 
 
 # space-separated list of source files
-SRCS = example.c
+SRCS =
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
@@ -66,7 +66,7 @@ include $(wildcard $(DEPFILES))
 
 # housekeeping
 clean:
-	rm -f $(EXE)
+	rm -f $(EXE) *.out
 	rm -rf obj
 
 run:
