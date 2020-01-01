@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "fluid_cmd.h": "c",
+        "fluid_sys.h": "c",
+        "fluidsynth_priv.h": "c",
+        "errno.h": "c",
+        "limits": "c",
+        "midifile.h": "c"
+    },
+    "cmake.configureOnOpen": false
+}
