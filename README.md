@@ -33,6 +33,12 @@ Load file on server and start playing!
 
 # Dev Plan
 
+## Notes
+Run fluidsynth with pulseaudio:
+```bash
+fluidsynth -a pulseaudio -m alsa_seq [midi] [soundfont]
+```
+
 ## Things you wish you knew before this project
 sudo apt install libfluidsynth-dev
 
@@ -44,6 +50,7 @@ sudo apt install libfluidsynth-dev
 - Use PulseAudio for playback (installed on school ubuntu computers)
 - Soundfont (as of now): [timbres_of_heaven](http://midkar.com/soundfonts/)
 
+- Use <assert.h> to assert.
 
 ## Libraries to use
 
@@ -56,6 +63,9 @@ sudo apt install libfluidsynth-dev
   - https://freedesktop.org/software/pulseaudio/doxygen/
   - http://gavv.github.io/articles/pulseaudio-under-the-hood/
 
+- Roc for network audio streaming
+  - https://roc-project.github.io/roc/docs/api.html
+  - https://github.com/roc-project/roc/blob/master/src/lib/example/receiver_sox.c
 
 ## Nice features to have
 
