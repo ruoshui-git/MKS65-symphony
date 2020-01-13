@@ -7,7 +7,7 @@
 
 
 # space-separated list of source files
-SRCS =
+SRCS = exp_router.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
@@ -20,6 +20,8 @@ EXE = main.out
 
 ifeq ($(filter $(DEBUG), false f FALSE F), )
 	DEBUG_FLAG = -ggdb3
+else
+    DEBUG_FLAG = -DNDEBUG
 endif
 
 CSTD = gnu11 # not c11

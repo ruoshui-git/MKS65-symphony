@@ -39,6 +39,12 @@ Run fluidsynth with pulseaudio:
 fluidsynth -a pulseaudio -m alsa_seq [midi] [soundfont]
 ```
 
+Compile pulseaudio api code with -lpulse lib; if using simple, also use -lpulse-simple lib
+Ex.
+```bash
+gcc driver.c -lpulse -lpulse-simple
+```
+
 ## Things you wish you knew before this project
 sudo apt install libfluidsynth-dev
 
