@@ -11,6 +11,9 @@
 
 #include <pulse/simple.h>
 
+#include <fluidsynth.h>
+
+
 #define BUFSIZE 1024
 int main(int argc, char*argv[]) {
     /* The Sample format to use */
@@ -22,6 +25,9 @@ int main(int argc, char*argv[]) {
     pa_simple *s = NULL;
     int ret = 1;
     int error;
+
+
+
     /* replace STDIN with the specified file if needed */
     if (argc > 1) {
         int fd;
@@ -36,7 +42,7 @@ int main(int argc, char*argv[]) {
         close(fd);
     }
     /* Create a new playback stream */
-    if (!(s = pa_simple_new(NULL, argv[0], PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, NULL, &error))) {
+    if (!(s = pa_simple_new(NULL, argv[0], PA_STREAM_PLAYBACK, NULL, "Music", &ss, NULL, NULL, &error))) {
         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
         goto finish;
     }
