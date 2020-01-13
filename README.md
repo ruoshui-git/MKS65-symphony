@@ -1,4 +1,4 @@
-# Project: Symphony
+# Project: Orchestra
 Play music with each computer playing one part, together forming an electronic orchestra.
 
 With school lab settings, people can walk around the room and listen to each part individually and also stand back to hear everything together.
