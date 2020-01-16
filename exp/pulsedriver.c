@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include <pulse/error.h>
 #include <pulse/sample.h>
@@ -100,9 +101,9 @@ int pulse_play(fluid_synth_t * synth)
             fluid_synth_write_float(synth, BUFSIZE/2, buf, 0, 2, buf, 1, 2);
 
 
-
+            memset(buf, 0, BUFSIZE);
             /* ... and play it */
-            if (pa_simple_write(s, buf, BUFSIZE * sizeof(float), &error) < 0) {
+            if (pa_simple_write(s, buf, BUFSIZE, &error) < 0) {
                 fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(error));
                 goto finish;
             }
