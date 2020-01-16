@@ -3,7 +3,7 @@
 
 int network_event_handler(void * data, fluid_midi_event_t *event);
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
     int i;
     fluid_settings_t* settings;
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     synth = new_fluid_synth(settings);
     player = new_fluid_player(synth); // default
     // player = new_fluid_player(NULL); // no synth
-    
+
     fluid_settings_setstr(settings, "audio.driver", "pulseaudio");
     fluid_settings_setstr(settings, "synth.midi-channels", "256");
 
@@ -59,7 +59,7 @@ int network_event_handler(void * data, fluid_midi_event_t *event)
 
     // if (chan != 15) return FLUID_OK;
     // printf("get channel %d;\n", chan);
-    
+
 
     switch(type)
     {
