@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include <pulse/error.h>
 #include <pulse/sample.h>
