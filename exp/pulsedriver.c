@@ -68,12 +68,14 @@ int main(int argc, char*argv[]) {
     //     }
     //     close(fd);
     // }
-
+    debug: puts("connecting to pulseaudio");
     /* Create a new playback stream */
     if (!(s = pa_simple_new(NULL, APP_NAME, PA_STREAM_PLAYBACK, NULL, "Music", &ss, NULL, NULL, &error))) {
         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
         goto finish;
     }
+
+    debug1: puts("trying to play");
 
 
 
@@ -97,12 +99,15 @@ int main(int argc, char*argv[]) {
         //     goto finish;
         // }
 
+
+        memset(buf, 0, BUFSIZE);
+
         fluid_synth_write_float(synth, BUFSIZE/2, buf, 0, 2, buf, 1, 2);
 
 
 
         /* ... and play it */
-        if (pa_simple_write(s, buf, (size_t) (BUFSIZE / 2), &error) < 0) {
+        if (pa_simple_write(s, buf, (size_t) (BUFSIZE), &error) < 0) {
             fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(error));
             goto finish;
         }
