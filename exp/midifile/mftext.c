@@ -7,7 +7,17 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
-#include "midifile.h"
+#include "midifile.alsa.h"
+
+int davypitch[100];
+
+struct {
+  int ontime;
+  int offtime;
+  int pitch;
+  int done;
+} davynote[100000];
+int n;
 
 void prtime();
 void initfuncs();
@@ -346,6 +356,4 @@ void initfuncs()
 	Mf_seqspecific =  txt_metaspecial;
 	Mf_text =  txt_metatext;
 	Mf_arbitrary =  txt_arbitrary;
-
-	portspec = port_spec;
 }
