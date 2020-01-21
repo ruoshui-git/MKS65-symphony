@@ -22,16 +22,11 @@
  * 
  */
 #include "midifile.h"
-#define NULLFUNC 0
-#define NULL 0
 
-#define THINK
-
-#ifdef THINK
 #include <stdlib.h>
-#endif
-
 #include <stdio.h>
+
+#define NULLFUNC 0
 
 static void readheader();
 static int readtrack();
@@ -77,6 +72,12 @@ void (*Mf_timesig)() = NULLFUNC;
 void (*Mf_keysig)() = NULLFUNC;
 void (*Mf_seqspecific)() = NULLFUNC;
 void (*Mf_text)() = NULLFUNC;
+
+void (*My_seqnum)() = NULLFUNC;
+void (*My_tempo)() = NULLFUNC;
+void (*My_smpte)() = NULLFUNC;
+void (*My_timesig)() = NULLFUNC;
+void (*My_keysig)() = NULLFUNC;
 
 void (*portspec)() = NULLFUNC;
 
@@ -322,6 +323,8 @@ void metaevent(int type)
 	case 0x00:
 		if ( Mf_seqnum )
 			(*Mf_seqnum)(to16bit(m[0],m[1]));
+		if ( My_seqnum )
+			(*My_seqnum)(m);
 		break;
 	case 0x01:	/* Text event */
 	case 0x02:	/* Copyright notice */
@@ -349,27 +352,35 @@ void metaevent(int type)
 	case 0x51:	/* Set tempo */
 		if ( Mf_tempo )
 			(*Mf_tempo)(to32bit(0,m[0],m[1],m[2]));
+		if ( My_tempo )
+			(*My_tempo)(m);
 		break;
 	case 0x54:
 		if ( Mf_smpte )
 			(*Mf_smpte)(m[0],m[1],m[2],m[3],m[4]);
+		if ( My_smpte )
+			(*My_smpte)(m);
 		break;
 	case 0x58:
 		if ( Mf_timesig )
 			(*Mf_timesig)(m[0],m[1],m[2],m[3]);
+		if ( My_timesig )
+			(*My_timesig)(m);
 		break;
 	case 0x59:
 		if ( Mf_keysig )
 			(*Mf_keysig)(m[0],m[1]);
+		if ( My_keysig )
+			(*My_keysig)(m);
 		break;
 	case 0x7f:
 		if ( Mf_seqspecific )
 			(*Mf_seqspecific)(leng,m);
 		break;
-	case 0x21:
-		if ( portspec )
-			(*portspec)(to16bit(m[0], m[1]));
-		break;
+	// case 0x21:
+	// 	if ( portspec )
+	// 		(*portspec)(to16bit(m[0], m[1]));
+	// 	break;
 	default:
 		if ( Mf_metamisc )
 			(*Mf_metamisc)(type,leng,m);
@@ -449,6 +460,7 @@ readvarinum()
 
 static long
 to32bit(c1,c2,c3,c4)
+int c1, c2, c3, c4;
 {
 	long value = 0L;
 

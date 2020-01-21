@@ -25,6 +25,14 @@ extern void (*Mf_error)();
 extern long Mf_currtime;
 extern int Mf_nomerge;
 
+void mfread();
+
+extern void (*My_timesig)();
+extern void (*My_seqnum)();
+extern void (*My_smpte)();
+extern void (*My_tempo)();
+extern void (*My_keysig)();
+
 extern void (*portspec)();
 
 /* definitions for MIDI file writing code */
@@ -98,7 +106,7 @@ int n;
 #define	smpte_offset		0x54
 #define	time_signature		0x58
 #define	key_signature		0x59
-#define	sequencer_specific	0x74
+#define	sequencer_specific	0x7f
 
 /* Manufacturer's ID number */
 #define Seq_Circuits (0x01) /* Sequential Circuits Inc. */
