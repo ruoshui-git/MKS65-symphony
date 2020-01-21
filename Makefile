@@ -7,7 +7,7 @@
 
 
 # space-separated list of source files
-SRCS = main.c midifile.c utils.c reader.c midi.c
+SRCS = main.c midifile.c utils.c reader.c midi.c writer.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l

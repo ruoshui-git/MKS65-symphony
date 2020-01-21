@@ -39,6 +39,7 @@ extern int (*Mf_writetempotrack)();
 
 extern void midifile();
 extern unsigned long mf_sec2ticks();
+
 extern void mfwrite();
 extern int mf_write_meta_event();
 extern int mf_write_midi_event(unsigned long delta_time, int type,
@@ -46,6 +47,7 @@ extern int mf_write_midi_event(unsigned long delta_time, int type,
 extern double mf_ticks2sec(unsigned long ticks,int division,unsigned long tempo);
 extern void mf_write_tempo();
 extern void mf_write_seqnum();
+
 extern void mfread();
 extern void mferror(char *s);
 

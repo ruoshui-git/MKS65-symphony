@@ -39,19 +39,18 @@ extern void (*portspec)();
 extern int (*Mf_putc)();
 extern int (*Mf_writetrack)();
 extern int (*Mf_writetempotrack)();
-float mf_ticks2sec();
+// float mf_ticks2sec();
+double mf_ticks2sec();
 unsigned long mf_sec2ticks();
 void mfwrite();
 
-int davypitch[100];
-
-struct {
-  int ontime;
-  int offtime;
-  int pitch;
-  int done;
-} davynote[100000];
-int n;
+extern void mfwrite();
+extern int mf_write_meta_event(unsigned long delta_time, unsigned char type, unsigned char * data, unsigned long size);
+extern int mf_write_midi_event(unsigned long delta_time, int type,
+	int chan, char *data, unsigned long size);
+extern double mf_ticks2sec(unsigned long ticks,int division,unsigned long tempo);
+extern void mf_write_tempo(unsigned long delta_time, unsigned long tempo);
+extern void mf_write_seqnum();
 
 /* MIDI status commands most significant bit is 1 */
 #define note_off         	0x80

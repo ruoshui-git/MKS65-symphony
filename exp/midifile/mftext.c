@@ -227,11 +227,12 @@ char *mess;
 	printf("Meta event, unrecognized, type=0x%02x leng=%d\n",type,leng);
 }
 
-void txt_metaspecial(type,leng,mess)
+void txt_metaspecial(leng,mess)
 char *mess;
 {
 	prtime();
-	printf("Meta event, sequencer-specific, type=0x%02x leng=%d\n",type,leng);
+	// printf("Meta event, sequencer-specific, type=0x%02x leng=%d\n",type,leng);
+	printf("Meta event, sequencer-specific, leng=%d\n",leng);
 }
 
 void txt_metatext(type,leng,mess)

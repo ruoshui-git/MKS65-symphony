@@ -8,7 +8,8 @@
         "midifile.h": "c",
         "utils.h": "c",
         "stdio.h": "c",
-        "midifile_old.h": "c"
+        "midifile_old.h": "c",
+        "type_traits": "c"
     },
     "cmake.configureOnOpen": false
 }

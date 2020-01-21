@@ -45,6 +45,8 @@ Ex.
 gcc driver.c -lpulse -lpulse-simple
 ```
 
+Error in mftext: metaspecial should not have attr "type"
+
 ## Things you wish you knew before this project
 sudo apt install libfluidsynth-dev
 
