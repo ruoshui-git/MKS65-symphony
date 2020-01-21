@@ -5,7 +5,10 @@
         "fluidsynth_priv.h": "c",
         "errno.h": "c",
         "limits": "c",
-        "midifile.h": "c"
+        "midifile.h": "c",
+        "utils.h": "c",
+        "stdio.h": "c",
+        "midifile_old.h": "c"
     },
     "cmake.configureOnOpen": false
 }
