@@ -60,6 +60,12 @@ sudo apt install libfluidsynth-dev
 
 - Use <assert.h> to assert.
 
+TODOS:
+1. implement frees
+2. uses ncurses and readline
+3. server
+4. "modernize" midifile.c; it was from like 1989
+
 ## Libraries to use
 
 - fluidsynth, for midi playback

@@ -7,14 +7,14 @@
 
 
 # space-separated list of source files
-SRCS = main.c midifile.c utils.c midi_reader.c midi.c midi_writer.c midi_splitter.c
+SRCS = server.c server_thread.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
-LIBS =
+LIBS = -pthread
 
 # name for executable
-EXE = main.out
+EXE = server.out
 
 # USAGE: Change above variables to suit your needs
 

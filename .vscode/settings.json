@@ -9,7 +9,10 @@
         "utils.h": "c",
         "stdio.h": "c",
         "midifile_old.h": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "stdlib.h": "c",
+        "midi_splitter.h": "c",
+        "unistd.h": "c"
     },
     "cmake.configureOnOpen": false
 }
