@@ -19,8 +19,9 @@ struct Mfile
     int cur_track_index;
 
     // info about music
-    char * music_name;
-    char * info_text;
+    char * filename;
+    char * music_name; // sequence name
+    char * info_text; // text midi event
     char * copyright_info;
 
 };
@@ -110,6 +111,11 @@ struct Mevent
 struct Mfile * new_mfile(void);
 
 /** 
+ * @return new Mfile from the specified headers
+*/
+struct Mfile * Mfile_from_headers(int format, int division,  char * filename, char * music_name, char * info_text, char * copyright_info);
+
+/** 
  * @param division A field in midi file header chunk
  * @return new Mheader
 */
@@ -119,6 +125,16 @@ struct Mfile * new_mfile(void);
  * @return new empty Mtrack
 */
 struct Mtrack * new_mtrack(void);
+
+/** 
+ * @return a copy of @param mtrack
+*/
+struct Mtrack * Mtrack_copy(struct Mtrack * mtrack);
+
+/** 
+ * @return a copy of @param event
+*/
+struct Mevent * Mevent_copy(struct Mevent * e);
 
 /** 
  * Make a new regular event

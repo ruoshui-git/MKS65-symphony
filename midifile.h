@@ -36,7 +36,7 @@ extern void (*My_keysig)();
 extern void (*portspec)();
 
 /* definitions for MIDI file writing code */
-extern int (*Mf_putc)();
+extern int (*Mf_putc)(char c);
 extern int (*Mf_writetrack)();
 extern int (*Mf_writetempotrack)();
 // float mf_ticks2sec();

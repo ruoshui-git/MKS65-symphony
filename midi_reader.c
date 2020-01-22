@@ -7,7 +7,45 @@
 #include "midi.h"
 #include "midifile.h"
 #include "utils.h"
-#include "reader.h"
+
+
+// private headers
+int filegetc();
+int loadfile(char *file);
+void unloadfile(void);
+void handle_header(int format, int ntracks, int division);
+void handle_track_start();
+void handle_track_end();
+void handle_noteon(int chan, int pitch, int vel);
+void handle_noteoff(int chan, int pitch, int vel);
+void handle_pressure(int chan, int pitch, int pressure);
+void handle_control_change(int chan, int control, int value);
+void handle_pitchbend(int chan, int msb, int lsb);
+void handle_program(int chan, int program);
+void handle_chan_pressure(int chan, int pressure);
+void handle_sysex(int len, char *msg);
+void handle_metamisc(int type, int len, char *msg);
+void handle_metaspecial(int len, char *msg);
+void handle_metatext(int type, int len, char *msg);
+void handle_metaeot();
+
+void handle_metaseq(int num);
+void handle_keysig(int sf, int mi);
+void handle_tempo(long tempo);
+void handle_timesig(int nn, int dd, int cc, int bb);
+void handle_smpte(int hr, int mn, int se, int fr, int ff);
+
+void my_handle_metaseq(char * data);
+void my_handle_keysig(char * data);
+void my_handle_tempo(char * data);
+void my_handle_timesig(char * data);
+void my_handle_smpte(char * data);
+
+void handle_arbitrary(int len, char * msg);
+void port_spec(long channum);
+void handle_error(char *s);
+void bindfcns(void);
+// end of headers
 
 static FILE *F;
 
@@ -26,7 +64,7 @@ struct Mfile * Mfile_from_file(char * filepath)
         bindfcns();
     }
 
-    if (!loadfile(filepath))
+    if (loadfile(filepath) == -1)
     {
         sys_error("Failed to load midi file");
         return NULL;
@@ -48,7 +86,7 @@ int filegetc()
  * @param file File path
  * @return 0 on success, -1 on failure
 */
-int loadfile(const char *file)
+int loadfile(char *file)
 {
     F = fopen(file, "r");
     if (!F)
@@ -58,6 +96,14 @@ int loadfile(const char *file)
     }
 
     mfile = new_mfile();
+
+    // add filename
+    char * filename = strrchr(file, '/');
+    if (!filename) // there's no '/' in file path
+        filename = file;
+    mfile->filename = strdup(filename);
+
+    return 0;
 }
 
 /**

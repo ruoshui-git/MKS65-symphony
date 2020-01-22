@@ -82,7 +82,7 @@ void (*My_keysig)() = NULLFUNC;
 void (*portspec)() = NULLFUNC;
 
 /* Functions to implement in order to write a MIDI file */
-int (*Mf_putc)() = NULLFUNC;
+int (*Mf_putc)(char c) = NULLFUNC;
 int (*Mf_writetrack)() = NULLFUNC;
 int (*Mf_writetempotrack)() = NULLFUNC;
 

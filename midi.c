@@ -4,20 +4,54 @@
 
 #include "midi.h"
 #include "midifile.h"
+#include "utils.h"
 
 struct Mfile * new_mfile(void)
 {
     return calloc(1, sizeof(struct Mfile));
 }
 
-/** 
- * @return new empty Mtrack
-*/
+struct Mfile * Mfile_from_headers(int format, int division,  char * filename, char * music_name, char * info_text, char * copyright_info)
+{
+    struct Mfile * mfile = new_mfile();
+    mfile->format = format;
+    mfile->division = division;
+    mfile->filename = cstrdup(filename);
+    mfile->music_name = cstrdup(music_name);
+    mfile->info_text = cstrdup(info_text);
+    mfile->copyright_info = cstrdup(copyright_info);
+}
+
 struct Mtrack * new_mtrack(void)
 {
     return calloc(1, sizeof(struct Mtrack));
 }
 
+struct Mtrack * Mtrack_copy(struct Mtrack * mtrack)
+{
+    struct Mtrack * copy = new_mtrack();
+    copy->name = cstrdup(mtrack->name);
+    copy->instrument = cstrdup(mtrack->instrument);
+    copy->text = cstrdup(mtrack->text);
+    copy->is_tempotrack = mtrack->is_tempotrack;
+    struct Mevent * e = mtrack->first;
+    
+    // copy->len = 0; // this will be changed by append_mevent 
+    while (e)
+    {
+        append_mevent(copy, Mevent_copy(e));
+        e = e->next;
+    }
+    return copy;
+}
+
+struct Mevent * Mevent_copy(struct Mevent * e)
+{
+    struct Mevent * copy = calloc(1, sizeof(struct Mevent));
+    // e is a struct with only one ptr so we can shallow copy
+    *copy = *e;
+    copy->next = NULL;
+}
 
 struct Mevent * new_mreg_event(unsigned long curtime, unsigned int type, unsigned int chan, unsigned int param1, unsigned int param2)
 {
