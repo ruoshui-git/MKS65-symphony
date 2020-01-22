@@ -43,6 +43,16 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+// get port, IPv4 or IPv6:
+in_port_t get_in_port(struct sockaddr *sa)
+{
+    if (sa->sa_family == AF_INET) {
+        return (((struct sockaddr_in*)sa)->sin_port);
+    }
+
+    return (((struct sockaddr_in6*)sa)->sin6_port);
+}
+
 int main(void)
 {
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
@@ -84,6 +94,10 @@ int main(void)
 			continue;
 		}
 
+		// inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),s, sizeof s);
+		printf("Listening on port %d\n", ntohs(get_in_port((struct sockaddr *)p->ai_addr)));
+
+
 		break;
 	}
 
@@ -109,7 +123,16 @@ int main(void)
 
 	struct tlist * clients = new_tlist();
 
+	// keeps track of the state of midi files
+	int midi_ready = 0; // will only be read from main server thread, so no need for atomic
+
+	// when midi is ready, send files
+
+	int accepting_clients = 0;
+
 	printf("server: waiting for connections...\n");
+	
+	int tid = 0; // thread id
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
 		new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
@@ -127,6 +150,7 @@ int main(void)
 
 		struct s_thread_arg arg;
 		arg.socket = new_fd;
+		arg.tid = tid;
 		pthread_t thread = new_server_thread(&arg);
 		struct tnode * node = new_tnode(thread, arg);
 		append_tnode(clients, node);
@@ -141,27 +165,9 @@ int main(void)
 		// close(new_fd);  // parent doesn't need this
 
 		printf("num threads: %d\n", clients->len);
+		
+		tid++;
 	}
 
 	return 0;
-}
-
-
-// from https://beej.us/guide/bgnet/html/#sendall
-int sendall(int s, char *buf, int *len)
-{
-    int total = 0;        // how many bytes we've sent
-    int bytesleft = *len; // how many we have left to send
-    int n;
-
-    while(total < *len) {
-        n = send(s, buf+total, bytesleft, 0);
-        if (n == -1) { break; }
-        total += n;
-        bytesleft -= n;
-    }
-
-    *len = total; // return number actually sent here
-
-    return n==-1?-1:0; // return -1 on failure, 0 on success
 }

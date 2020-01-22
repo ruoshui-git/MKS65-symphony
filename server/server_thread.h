@@ -5,6 +5,7 @@
 struct s_thread_arg
 {
     int socket;
+    int tid;
 };
 
 struct tlist

@@ -9,6 +9,7 @@
 #include "server_thread.h"
 
 
+
 pthread_t new_server_thread(struct s_thread_arg * arg)
 {
     pthread_t thread;
@@ -20,12 +21,12 @@ void * server_thread(void * _arg)
 {
     struct s_thread_arg * arg = (struct s_thread_arg *) _arg;
     int client = arg->socket;
+    int my_id = arg->tid;
     ssize_t bytes_sent;
     int i;
     char buff[100];
-    snprintf(buff, sizeof buff, "Hello from thread, %i", i);
-    bytes_sent = send(client, buff, strlen(buff), 0);
-
+    snprintf(buff, sizeof buff, "connected", my_id);
+    bytes_sent = send(client, buff, 10 /* strlen(buff) */, 0);
 
     return EXIT_SUCCESS;
 }
@@ -61,4 +62,24 @@ struct tnode * new_tnode(pthread_t thread, struct s_thread_arg arg)
     node->thread = thread;
     node->next = NULL;
     return node;
+}
+
+
+// from https://beej.us/guide/bgnet/html/#sendall
+int sendall(int s, char *buf, int *len)
+{
+    int total = 0;        // how many bytes we've sent
+    int bytesleft = *len; // how many we have left to send
+    int n;
+
+    while(total < *len) {
+        n = send(s, buf+total, bytesleft, 0);
+        if (n == -1) { break; }
+        total += n;
+        bytesleft -= n;
+    }
+
+    *len = total; // return number actually sent here
+
+    return n==-1?-1:0; // return -1 on failure, 0 on success
 }
