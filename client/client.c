@@ -16,6 +16,8 @@
 
 #define PORT "14440" // the port client will be connecting to 
 
+#define SERVER_ADDR "localhost"
+
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 
 // get sockaddr, IPv4 or IPv6:
@@ -36,16 +38,17 @@ int main(int argc, char *argv[])
 	int rv;
 	char s[INET6_ADDRSTRLEN];
 
-	if (argc != 2) {
-	    fprintf(stderr,"usage: client hostname\n");
-	    exit(1);
-	}
+	// if (argc != 2) {
+	//     // fprintf(stderr,"usage: client hostname\n");
+	//     // exit(1);
+	// }
+	
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(argv[1], PORT, &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(/* argv[1] */ SERVER_ADDR, PORT, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
@@ -78,14 +81,28 @@ int main(int argc, char *argv[])
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-	if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+	if ((numbytes = recv(sockfd, buf, 10, 0)) == -1) {
 	    perror("recv");
 	    exit(1);
 	}
 
 	buf[numbytes] = '\0';
 
-	printf("client: received '%s'\n",buf);
+	printf("client: received '%s'\n, numbytes: %d\n",buf, numbytes);
+
+	u_int32_t id;
+	// if (recv(sockfd, &id, 4, 0) == -1)
+	if (read(sockfd, &id, 4) == -1)
+	{
+		perror("recv");
+		exit(1);
+	}
+
+	puts("data received");
+
+	id = ntohl(id);
+
+	printf("id: %u\n", id);
 
 	close(sockfd);
 

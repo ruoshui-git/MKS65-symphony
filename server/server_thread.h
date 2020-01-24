@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <signal.h>
 
 #ifndef SERVER_THREAD_H
 #define SERVER_THREAD_H
@@ -6,6 +7,9 @@ struct s_thread_arg
 {
     int socket;
     int tid;
+    sig_atomic_t * midi_ready;
+    pthread_cond_t * midi_ready_cond;
+    pthread_mutex_t * midi_ready_cond_mutex;
 };
 
 struct tlist
@@ -18,7 +22,7 @@ struct tlist
 struct tnode
 {
     pthread_t thread;
-    struct s_thread_arg arg;
+    struct s_thread_arg * arg;
     struct tnode * next;
 };
 
@@ -30,4 +34,4 @@ void * server_thread(void * _arg);
 
 struct tlist * new_tlist();
 void append_tnode(struct tlist * list, struct tnode * node);
-struct tnode * new_tnode(pthread_t thread, struct s_thread_arg arg);
+struct tnode * new_tnode(pthread_t thread, struct s_thread_arg * arg);
