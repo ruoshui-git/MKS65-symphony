@@ -7,14 +7,14 @@
 
 
 # space-separated list of source files
-SRCS = server.c server_thread.c
+SRCS = server.c server_thread.c shell.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
 LIBS = -pthread
 
 # name for executable
-EXE = server.out
+EXE = main.out
 
 # USAGE: Change above variables to suit your needs
 

@@ -26,12 +26,24 @@
 
 #define BACKLOG 20 // how many pending connections queue will hold
 
+struct server_arg
+{
+    int sockfd;
+    int control_fd;
+};
+
+/** Thread start routine for the main server thread */
+void * main_server_thread(void * _arg);
+
+/** Read from control pipe and do the according action */
+void handle_control(int control_fd);
+
 /* keeps track of the state of midi files */
 sig_atomic_t midi_ready = 0; // midi files are not generated until after all clients are connected
 pthread_cond_t midi_ready_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t midi_ready_cond_mutex = PTHREAD_MUTEX_INITIALIZER;
 struct tlist *clients = NULL;
-int sockfd = -1;
+// int sockfd = -1;
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -54,13 +66,9 @@ in_port_t get_in_port(struct sockaddr *sa)
 	return (((struct sockaddr_in6 *)sa)->sin6_port);
 }
 
-/** 
- * Setup listening server
- * @return socket descriptor
-*/
 int setup_server(void)
 {
-	// int sockfd;  // listen on sock_fd
+	int sockfd;  // listen on sock_fd
 	struct addrinfo hints, *servinfo, *p;
 	// struct sigaction sa; // not using fork()
 	int yes = 1;
@@ -124,9 +132,28 @@ int setup_server(void)
 	return sockfd;
 }
 
-int main(void)
+pthread_t run_server(int sockfd, int control_fd)
 {
-	int control_fd; // will be from stdin
+	struct server_arg sarg;
+	sarg.sockfd = sockfd;
+	sarg.control_fd = control_fd;
+
+	pthread_t thread;
+	if (pthread_create(&thread, NULL, main_server_thread, &sarg))
+	{
+		perror("pthread_create");
+		exit(1);
+	}
+	return thread;
+}
+
+void * main_server_thread(void * _arg)
+{
+	struct server_arg arg = *((struct server_arg *) _arg);
+	int control_fd = arg.control_fd;
+	int sockfd = arg.sockfd;
+
+	// int control_fd; // will be from stdin
 	socklen_t sin_size;
 	char s[INET6_ADDRSTRLEN];			// hold address str
 	int client_fd;						// new connection descriptor
@@ -134,8 +161,6 @@ int main(void)
 	fd_set readfds, readfds_copy;
 	FD_ZERO(&readfds);
 	FD_SET(control_fd, &readfds);
-
-	setup_server(); // modifies the global: sockfd
 	FD_SET(sockfd, &readfds);
 
 	// /* keeps track of the state of midi files */
@@ -194,6 +219,4 @@ int main(void)
 			tid++;
 		}
 	}
-
-	return 0;
 }

@@ -15,7 +15,11 @@ int sendall(int sockfd, void *buf, int *len);
 pthread_t new_server_thread(struct s_thread_arg * arg)
 {
     pthread_t thread;
-    pthread_create(&thread, NULL, server_thread, arg);
+    if (pthread_create(&thread, NULL, server_thread, arg) != 0)
+    {
+        perror("pthread_create");
+        exit(1);
+    }
     return thread;
 }
 
