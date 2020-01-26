@@ -11,7 +11,7 @@ SRCS = server.c server_thread.c shell.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
-LIBS = -pthread
+LIBS = -pthread -lreadline
 
 # name for executable
 EXE = main.out

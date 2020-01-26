@@ -17,7 +17,6 @@
 #include <pthread.h>
 
 #include "server_thread.h"
-#include "server_local_protocol.h"
 #include "server.h"
 
 // from https://beej.us/guide/bgnet/html/#a-simple-stream-server
@@ -44,6 +43,8 @@ pthread_cond_t midi_ready_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t midi_ready_cond_mutex = PTHREAD_MUTEX_INITIALIZER;
 struct tlist *clients = NULL;
 // int sockfd = -1;
+
+int accepting_clients = 1; // whether server is accepting clients
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -173,6 +174,7 @@ void * main_server_thread(void * _arg)
 	printf("server: waiting for connections...\n");
 
 	int tid = 0; // thread id
+	struct server_ctl cmd; // command from main thread
 	while (1)
 	{ // main accept() loop
 		readfds_copy = readfds;
@@ -185,7 +187,15 @@ void * main_server_thread(void * _arg)
 		if (FD_ISSET(control_fd, &readfds_copy))
 		{
 			// handle communication with main thread
-			handle_control(control_fd);
+			// handle_control(control_fd);
+			read(control_fd, &cmd, sizeof(cmd));
+			if (cmd.control == SERVER_START_PLAYER)
+			{
+				accepting_clients = 0;
+				puts("server: no longer accepting connections");
+
+				// set up files
+			}
 		}
 		else
 		{
@@ -194,6 +204,13 @@ void * main_server_thread(void * _arg)
 			if (client_fd == -1)
 			{
 				perror("accept");
+				continue;
+			}
+
+			// if not accepting clients, close the connection immediately
+			if (!accepting_clients)
+			{
+				close(client_fd);
 				continue;
 			}
 

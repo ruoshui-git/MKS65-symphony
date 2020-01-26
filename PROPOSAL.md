@@ -57,6 +57,9 @@ sudo apt install libfluidsynth-dev
   - some midi files to test: http://www.kunstderfuge.com/beethoven/variae.htm#Symphonies
 - Use PulseAudio for playback (installed on school ubuntu computers)
 - Soundfont (as of now): [timbres_of_heaven](http://midkar.com/soundfonts/)
+Readline: 
+- sudo apt-get install libreadline6 libreadline6-dev
+
 
 - Use <assert.h> to assert.
 
