@@ -9,6 +9,9 @@ enum server_control_set
     SERVER_SET_PLAYER = 1,
     // Requires vavlue to be a possible value for seeking
     SERVER_SEEK_PLAYER = 2,
+    SERVER_RECONNECT = 3,
+    SERVER_QUIT = 4,
+    SERVER_PRINT_STATUS = 5
 };
 
 enum player_control
@@ -16,7 +19,9 @@ enum player_control
     PLAYER_PAUSE = 0,
     PLAYER_RESUME = 1,
     /** Restart playing from beginning */
-    PLAYER_RESTART = 2
+    PLAYER_RESTART = 2,
+    PLAYER_LOOP = 3,
+    PLAYER_NOLOOP = 4,
 };
 
 struct server_ctl

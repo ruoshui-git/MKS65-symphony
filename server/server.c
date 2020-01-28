@@ -1,23 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
 #include <string.h>
+#include <errno.h>
+#include <netdb.h>
+#include <signal.h>
+#include <assert.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <sys/wait.h>
-#include <signal.h>
-
-#include <sys/time.h>
-#include <unistd.h>
+#include <sys/stat.h>
 
 #include <pthread.h>
 
 #include "server_thread.h"
 #include "server.h"
+#include "midi_reader.h"
+#include "midi_splitter.h"
+#include "midi_writer.h"
+#include "utils.h"
 
 // from https://beej.us/guide/bgnet/html/#a-simple-stream-server
 
@@ -25,14 +29,17 @@
 
 #define BACKLOG 20 // how many pending connections queue will hold
 
+struct Mfile *mfile;
+char **midi_out_names;
+
 struct server_arg
 {
-    int sockfd;
-    int control_fd;
+	int sockfd;
+	int control_fd;
 };
 
 /** Thread start routine for the main server thread */
-void * main_server_thread(void * _arg);
+void *main_server_thread(void *_arg);
 
 /** Read from control pipe and do the according action */
 void handle_control(int control_fd);
@@ -43,6 +50,9 @@ pthread_cond_t midi_ready_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t midi_ready_cond_mutex = PTHREAD_MUTEX_INITIALIZER;
 struct tlist *clients = NULL;
 // int sockfd = -1;
+
+// name of temp dir for midi files
+char *tmp_dir = NULL;
 
 int accepting_clients = 1; // whether server is accepting clients
 
@@ -69,7 +79,7 @@ in_port_t get_in_port(struct sockaddr *sa)
 
 int setup_server(void)
 {
-	int sockfd;  // listen on sock_fd
+	int sockfd; // listen on sock_fd
 	struct addrinfo hints, *servinfo, *p;
 	// struct sigaction sa; // not using fork()
 	int yes = 1;
@@ -148,9 +158,9 @@ pthread_t run_server(int sockfd, int control_fd)
 	return thread;
 }
 
-void * main_server_thread(void * _arg)
+void *main_server_thread(void *_arg)
 {
-	struct server_arg arg = *((struct server_arg *) _arg);
+	struct server_arg arg = *((struct server_arg *)_arg);
 	int control_fd = arg.control_fd;
 	int sockfd = arg.sockfd;
 
@@ -173,8 +183,8 @@ void * main_server_thread(void * _arg)
 	clients = new_tlist();
 	printf("server: waiting for connections...\n");
 
-	int tid = 0; // thread id
-	struct server_ctl cmd; // command from main thread
+	int tid = 0;		   // thread id
+	struct server_ctl ctl; // command from main thread
 	while (1)
 	{ // main accept() loop
 		readfds_copy = readfds;
@@ -188,13 +198,66 @@ void * main_server_thread(void * _arg)
 		{
 			// handle communication with main thread
 			// handle_control(control_fd);
-			read(control_fd, &cmd, sizeof(cmd));
-			if (cmd.control == SERVER_START_PLAYER)
+			read(control_fd, &ctl, sizeof(ctl));
+			if (ctl.control == SERVER_START_PLAYER)
 			{
 				accepting_clients = 0;
 				puts("server: no longer accepting connections");
 
 				// set up files
+				assert(mfile != NULL);
+				int nclients = clients->len;
+				struct Mfile **midi_out = Mfile_split_by_tracks(mfile, nclients);
+
+				if (!tmp_dir)
+				{
+					char *wd = getcwd(NULL, 0);
+					tmp_dir = malloc(strlen(wd) + 4); // wd + "tmp/"
+					strcpy(tmp_dir, wd);
+					strcat(tmp_dir, "tmp/");
+					free(wd);
+				}
+
+				// check if tmp_dir already exist
+				struct stat s;
+				if (stat(tmp_dir, &s) == -1)
+				{
+					if (errno = ENOENT)
+					{
+						// tmp dir doesn't exist
+						mkdir(tmp_dir, 641);
+					}
+					else
+					{
+						perror("stat");
+						// clean up
+						exit(1);
+					}
+				}
+				else
+				{
+					if (!S_ISDIR(s.st_mode))
+					{
+						sys_warning("Please remove the file with name 'tmp' since a dir with this name needs to be created");
+						// clean up
+						exit(1);
+					}
+				}
+
+				// write out files to tmp_dir
+				midi_out_names = malloc(sizeof(char *) * nclients);
+				for (int i = 0; i < nclients; i++)
+				{
+					char fname[11];
+					sprintf(fname, "out_%d.mid", i);
+					char * absfname = malloc(strlen(tmp_dir) + strlen(fname) + 1); // + 1 for null
+					strcpy(absfname, tmp_dir);
+					strcat(absfname, fname);
+					Mfile_write_to_midi(midi_out[i], absfname);
+					midi_out_names[i] = absfname;
+				}
+				
+				// send files to clients
 			}
 		}
 		else

@@ -3,7 +3,7 @@
 struct cmd
 {
     char * name;
-    char * type;
+    int num_args;
     char * desc;
     void (*fn)();
 };

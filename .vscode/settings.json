@@ -12,7 +12,8 @@
         "type_traits": "c",
         "stdlib.h": "c",
         "midi_splitter.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "midi.h": "c"
     },
     "cmake.configureOnOpen": false
 }

@@ -3,22 +3,22 @@
 
 void parser_error(char * msg)
 {
-    printf("Parser error: %s\n", msg);
+    fprintf(stderr, "Parser error: %s\n", msg);
 }
 
 void sys_error(char * msg)
 {
-    printf("System error: %s\n", msg);
+    fprintf(stderr, "System error: %s\n", msg);
 }
 
 void writer_error(char * msg)
 {
-    printf("Writer error: %s\n", msg);
+    fprintf(stderr, "Writer error: %s\n", msg);
 }
 
 void sys_warning(char * msg)
 {
-    printf("Warning: %s\n");
+    fprintf(stderr, "Warning: %s\n");
 }
 
 /** 
