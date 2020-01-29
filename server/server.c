@@ -204,6 +204,7 @@ void *main_server_thread(void *_arg)
 				accepting_clients = 0;
 				puts("server: no longer accepting connections");
 
+				midi_ready = 0; // (re)set midi_file conditions
 				// set up files
 				assert(mfile != NULL);
 				int nclients = clients->len;
@@ -258,6 +259,8 @@ void *main_server_thread(void *_arg)
 				}
 				
 				// send files to clients
+				pthread_lock(&midi_ready_cond_mutex);
+				pthread_cond_broadcast()
 			}
 		}
 		else
