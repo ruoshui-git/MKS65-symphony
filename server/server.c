@@ -44,6 +44,9 @@ void *main_server_thread(void *_arg);
 /** Read from control pipe and do the according action */
 void handle_control(int control_fd);
 
+/** Make tmp dir if it doesn't exist */
+void make_tmp_dir();
+
 /* keeps track of the state of midi files */
 sig_atomic_t midi_ready = 0; // midi files are not generated until after all clients are connected
 pthread_cond_t midi_ready_cond = PTHREAD_COND_INITIALIZER;
@@ -201,66 +204,14 @@ void *main_server_thread(void *_arg)
 			read(control_fd, &ctl, sizeof(ctl));
 			if (ctl.control == SERVER_START_PLAYER)
 			{
-				accepting_clients = 0;
-				puts("server: no longer accepting connections");
+				create_midi_files();
 
-				midi_ready = 0; // (re)set midi_file conditions
-				// set up files
-				assert(mfile != NULL);
-				int nclients = clients->len;
-				struct Mfile **midi_out = Mfile_split_by_tracks(mfile, nclients);
-
-				if (!tmp_dir)
-				{
-					char *wd = getcwd(NULL, 0);
-					tmp_dir = malloc(strlen(wd) + 4); // wd + "tmp/"
-					strcpy(tmp_dir, wd);
-					strcat(tmp_dir, "tmp/");
-					free(wd);
-				}
-
-				// check if tmp_dir already exist
-				struct stat s;
-				if (stat(tmp_dir, &s) == -1)
-				{
-					if (errno = ENOENT)
-					{
-						// tmp dir doesn't exist
-						mkdir(tmp_dir, 641);
-					}
-					else
-					{
-						perror("stat");
-						// clean up
-						exit(1);
-					}
-				}
-				else
-				{
-					if (!S_ISDIR(s.st_mode))
-					{
-						sys_warning("Please remove the file with name 'tmp' since a dir with this name needs to be created");
-						// clean up
-						exit(1);
-					}
-				}
-
-				// write out files to tmp_dir
-				midi_out_names = malloc(sizeof(char *) * nclients);
-				for (int i = 0; i < nclients; i++)
-				{
-					char fname[11];
-					sprintf(fname, "out_%d.mid", i);
-					char * absfname = malloc(strlen(tmp_dir) + strlen(fname) + 1); // + 1 for null
-					strcpy(absfname, tmp_dir);
-					strcat(absfname, fname);
-					Mfile_write_to_midi(midi_out[i], absfname);
-					midi_out_names[i] = absfname;
-				}
-				
 				// send files to clients
-				pthread_lock(&midi_ready_cond_mutex);
-				pthread_cond_broadcast()
+				pthread_mutex_lock(&midi_ready_cond_mutex);
+				midi_ready = 1;
+				pthread_mutex_unlock(&midi_ready_cond_mutex);
+				pthread_cond_broadcast(&midi_ready_cond);
+
 			}
 		}
 		else
@@ -301,5 +252,70 @@ void *main_server_thread(void *_arg)
 
 			tid++;
 		}
+	}
+}
+
+void make_tmp_dir(void)
+{
+	if (!tmp_dir)
+	{
+		char *wd = getcwd(NULL, 0);
+		tmp_dir = malloc(strlen(wd) + 4); // wd + "tmp/"
+		strcpy(tmp_dir, wd);
+		strcat(tmp_dir, "tmp/");
+		free(wd);
+	}
+
+	// check if tmp_dir already exist
+	struct stat s;
+	if (stat(tmp_dir, &s) == -1)
+	{
+		if (errno = ENOENT)
+		{
+			// tmp dir doesn't exist
+			mkdir(tmp_dir, 641);
+		}
+		else
+		{
+			perror("stat");
+			// clean up
+			exit(1);
+		}
+	}
+	else
+	{
+		if (!S_ISDIR(s.st_mode))
+		{
+			sys_warning("Please remove the file with name 'tmp' since a dir with this name needs to be created");
+			// clean up
+			exit(1);
+		}
+	}
+}
+
+void create_midi_files()
+{
+	accepting_clients = 0;
+	puts("server: no longer accepting connections");
+
+	midi_ready = 0; // (re)set midi_file conditions
+	// set up files
+	assert(mfile != NULL);
+	int nclients = clients->len;
+	struct Mfile **midi_out = Mfile_split_by_tracks(mfile, nclients);
+
+	make_tmp_dir();
+
+	// write out files to tmp_dir
+	midi_out_names = malloc(sizeof(char *) * nclients);
+	for (int i = 0; i < nclients; i++)
+	{
+		char fname[strlen(MIDI_OUT_FORMAT) + 2];
+		sprintf(fname, MIDI_OUT_FORMAT, i);
+		char *absfname = malloc(strlen(tmp_dir) + strlen(fname) + 1); // + 1 for null
+		strcpy(absfname, tmp_dir);
+		strcat(absfname, fname);
+		Mfile_write_to_midi(midi_out[i], absfname);
+		midi_out_names[i] = absfname;
 	}
 }

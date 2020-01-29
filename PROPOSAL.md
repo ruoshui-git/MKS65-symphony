@@ -63,6 +63,21 @@ Readline:
 
 - Use <assert.h> to assert.
 
+Server-client communication:
+- connection established
+- Server responds with "connected", then an id of 4 bytes
+- Server sends the size of the file in a 4 byte int
+- Server sends the file
+- Client sends 1 to signal ready to play
+- Server sends commands while client is playing/paused:
+  - 0 = play
+  - 1 = pause
+  - 2 = resume
+  - 3 = seek - followed by another 4 byte with a tick value
+  - 4 = loop
+  - 5 = noloop
+  - 6 = another file
+
 TODOS:
 1. implement frees
 2. uses ncurses and readline

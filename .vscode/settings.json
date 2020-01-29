@@ -13,7 +13,8 @@
         "stdlib.h": "c",
         "midi_splitter.h": "c",
         "unistd.h": "c",
-        "midi.h": "c"
+        "midi.h": "c",
+        "server_thread.h": "c"
     },
     "cmake.configureOnOpen": false
 }

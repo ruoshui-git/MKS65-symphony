@@ -26,6 +26,8 @@ struct tnode
     struct tnode * next;
 };
 
+#define MIDI_OUT_FORMAT "out_%d.mid"
+
 #endif
 
 /** Create a new server thread to handle connection */
