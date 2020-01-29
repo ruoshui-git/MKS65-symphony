@@ -20,6 +20,7 @@ struct Mfile
 
     // info about music
     char * filename;
+    char * fullpath;
     char * music_name; // sequence name
     char * info_text; // text midi event
     char * copyright_info;

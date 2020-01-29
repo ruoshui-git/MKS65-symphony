@@ -21,6 +21,7 @@
 #include "midi_reader.h"
 #include "midi_splitter.h"
 #include "midi_writer.h"
+#include "midi_player.h"
 #include "utils.h"
 
 // from https://beej.us/guide/bgnet/html/#a-simple-stream-server
@@ -211,6 +212,13 @@ void *main_server_thread(void *_arg)
 				midi_ready = 1;
 				pthread_mutex_unlock(&midi_ready_cond_mutex);
 				pthread_cond_broadcast(&midi_ready_cond);
+
+				
+				player_setup();
+				player_add_midi_file(mfile->fullpath);
+				// barrier here
+				// wait for some time;
+				player_play();
 
 			}
 		}

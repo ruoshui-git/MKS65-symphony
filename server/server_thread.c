@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 
 #include "server_thread.h"
+#include "../client_protocol.h"
 
 int sendall(int sockfd, void *buf, int *len);
 
@@ -91,14 +92,23 @@ void *server_thread(void *_arg)
         pthread_exit(1);
     }
 
+    // wait for client to respond
     unsigned char cbuff;
-    if (recv(client, &cbuff, 1, NULL) == -1)
+    if (recv(client, &cbuff, 1, 0) == -1)
     {
         perror("recv");
     }
 
-    // now file is on client side, get ready to play
+    // now file is on client side
+    // call barrier and start playing
     
+    cbuff = CLIENT_PLAY;
+    if (send(client, &cbuff, 1, 0) == -1)
+    {
+        perror("send");
+    }
+
+    // wait for more commands, and send them
 
     return EXIT_SUCCESS;
 }

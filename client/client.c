@@ -104,6 +104,8 @@ int main(int argc, char *argv[])
 
 	printf("id: %u\n", id);
 
+	
+
 	close(sockfd);
 
 	return 0;

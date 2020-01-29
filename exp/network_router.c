@@ -19,8 +19,9 @@ int main(int argc, char** argv)
     fluid_settings_setstr(settings, "synth.midi-channels", "256");
 
     // fluid_player_set_playback_callback(player, fluid_synth_handle_midi_event, synth); // default
-    fluid_player_set_playback_callback(player, network_event_handler, synth);
+    // fluid_player_set_playback_callback(player, network_event_handler, synth);
 
+    puts ("processing args");
     /* process command line arguments */
     for (i = 1; i < argc; i++) {
         if (fluid_is_soundfont(argv[i])) {
@@ -30,9 +31,12 @@ int main(int argc, char** argv)
             fluid_player_add(player, argv[i]);
         }
     }
+    
     /* start the synthesizer thread */
     adriver = new_fluid_audio_driver(settings, synth);
 
+    puts("enter anything to start playback");
+    getchar();
     /* play the midi files, if any */
     fluid_player_play(player);
     /* wait for playback termination */
