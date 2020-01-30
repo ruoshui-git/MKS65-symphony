@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -65,14 +66,14 @@ void *server_thread(void *_arg)
     if (!f)
     {
         perror("fopen");
-        int val = 1;
-        pthread_exit(&val);
+        exit(1);
     }
 
     // get file size
     fseek(f, 0, SEEK_END);
     uint32_t fsize = ftell(f);
     uint32_t nfsize = htonl(fsize);
+
     len = 4;
 
     // send file size first
@@ -85,14 +86,12 @@ void *server_thread(void *_arg)
     if (ferror(f))
     {
         perror("fread");
-        int val = 1;
-        pthread_exit(&val);
+        goto handle_error;
     }
 
     if (sendall(client, buf, &fsize) == -1)
     {
-        int val = 1;
-        pthread_exit(&val);
+        goto handle_error;
     }
 
     // wait for client to respond
@@ -115,6 +114,11 @@ void *server_thread(void *_arg)
     
 
     return EXIT_SUCCESS;
+
+    handle_error:
+        close(client);
+        int val = 1;
+        pthread_exit(&val);
 }
 
 struct tlist *new_tlist()

@@ -204,11 +204,14 @@ void *main_server_thread(void *_arg)
 			exit(4);
 		}
 
+		puts("selecting");
 		if (FD_ISSET(control_fd, &readfds_copy))
 		{
 			// handle communication with main thread
 			// handle_control(control_fd);
 			read(control_fd, &ctl, sizeof(ctl));
+
+			printf("control: %d, val: %d\n", ctl.control, ctl.value);
 
 			if (ctl.control == SERVER_START_PLAYER)
 			{
@@ -246,15 +249,23 @@ void *main_server_thread(void *_arg)
 			}
 			else if (ctl.control == SERVER_PRINT_STATUS)
 			{
+				printf("Num clients: %d\n", clients->len);
 				
 			}
 			else if (ctl.control == SERVER_RECONNECT)
 			{
-
+				
 			}
 			else if (ctl.control == SERVER_QUIT)
 			{
-				
+				struct tnode * cur = clients->first;
+				while (cur)
+				{
+					pthread_cancel(cur->thread);
+					cur = cur->next;
+				}
+				free(clients);
+				return 0;
 			}
 			else
 			{

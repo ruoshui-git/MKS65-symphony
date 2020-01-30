@@ -14,11 +14,16 @@
 
 #include <arpa/inet.h>
 
+#include "midi_player.h"
+#include "../client_protocol.h"
+
 #define PORT "14440" // the port client will be connecting to 
 
 #define SERVER_ADDR "localhost"
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
+
+int recvall(int sockfd, void *buf, unsigned int *len);
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -83,7 +88,7 @@ int main(int argc, char *argv[])
 
 	if ((numbytes = recv(sockfd, buf, 10, 0)) == -1) {
 	    perror("recv");
-	    exit(1);
+		goto cleanup;
 	}
 
 	buf[numbytes] = '\0';
@@ -95,7 +100,7 @@ int main(int argc, char *argv[])
 	if (read(sockfd, &id, 4) == -1)
 	{
 		perror("recv");
-		exit(1);
+		goto cleanup;
 	}
 
 	puts("data received");
@@ -104,14 +109,86 @@ int main(int argc, char *argv[])
 
 	printf("id: %u\n", id);
 
-	
+	puts("waiting for server response");
+
+new_file:
+	;
+	uint32_t fsize = 0;
+	if (read(sockfd, &fsize, 4) == -1)
+	{
+		perror("read");
+		goto cleanup;
+	}
+
+
+	printf("size of midi file: %uld\n", fsize);
+	puts("waiting for file...");
+
+	char* fbuff = malloc(fsize);
+	uint32_t recvsize = fsize;
+	if (recvall(sockfd, fbuff, &fsize) == -1)
+	{
+		goto cleanup;
+	}
+
+	// now we got file, set up player
+	player_setup();
+	player_add_midi_mem(fbuff, fsize);
+
+	// signal ready
+
+	unsigned char sbuf = 1;
+
+	if (send(sockfd, &sbuf, 1, 0) == -1)
+	{
+		perror("send");
+		goto cleanup;
+	}
+
+	// read instruction from server and exec
+	while (1)
+	{
+		read(sockfd, &sbuf, 1);
+		switch(sbuf)
+		{
+			case CLIENT_PLAY:
+				player_play();
+				break;
+			case CLIENT_PAUSE:
+				player_pause();
+				break;
+			case CLIENT_RESUME:
+				player_play();
+				break;
+			case CLIENT_SEEK: // followed by another 4 byte with a tick value
+				puts("Cannot seek due to library limitation");
+				break;
+				break;
+			case CLIENT_LOOP:
+				player_setloop(1);
+				break;
+			case CLIENT_NOLOOP:
+				player_setloop(0);
+				break;
+			case CLIENT_NFILE: // new file
+				free(fbuff);
+				goto new_file;
+				break;
+			default:
+				puts("Unrecognized command");
+		}
+	}
 
 	close(sockfd);
 
 	return 0;
+
+	cleanup:
+		close(sockfd);
+		exit(1);
 }
 
-int recvall(int sockfd, void *buf, int *len)
+int recvall(int sockfd, void *buf, unsigned int *len)
 {
     int total = 0;        // how many bytes we've received
     int bytesleft = *len; // how many we have left to receive

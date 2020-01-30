@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <readline/readline.h>
-#include <readline/history.h>
+// #include <readline/readline.h>
+// #include <readline/history.h>
 
 #include <fluidsynth.h>
 
@@ -44,6 +44,8 @@ int handle_seek(int value);
 int handle_status();
 int handle_quit();
 int handle_reconnect();
+int handle_help();
+
 
 
 
@@ -65,10 +67,13 @@ struct cmd cmds[] =
         // {"restart", 0, "restart midi playback with current clients", handle_restart},
         // seek is also no supported
         {"loop", 0, "loop midi playback", handle_loop},
-        {"noloop", 0, "don't look midi playback", handle_noloop},
+        {"noloop", 0, "don't loop midi playback", handle_noloop},
         {"status", 0, "print current status of server", handle_status},
         {"quit", 0, "quit", handle_quit},
-        {"reconnect", 0, "close all current clients and connect new ones", handle_reconnect}};
+        {"reconnect", 0, "close all current clients and connect new ones", handle_reconnect},
+        {"help", 0, "print help message", handle_help}};
+
+const int cmds_len = sizeof(cmds) / sizeof(struct cmd);
 
 int main(int argc, char *argv[])
 {
@@ -85,6 +90,8 @@ int main(int argc, char *argv[])
     main_server = run_server(sockfd, control_fd);
 
     // done setting up server, start prompt for input
+    
+    sleep(0.1);
 
     char *cmd;
     int nwords;
@@ -92,10 +99,20 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        if (!(line = readline("> ")))
+
+        // not using readline
+        fprintf(stdout, "> ");
+        line = malloc(1000);
+        if(!fgets(line, 1000, stdin))
         {
-            continue;
+            perror("fgets");
         }
+        line[strlen(line) - 1] = '\0'; // replace \n with \0
+
+        // if (!(line = readline("> ")))
+        // {
+            // continue;
+        // }
         if (strlen(line) == 0)
         {
             puts("");
@@ -106,9 +123,9 @@ int main(int argc, char *argv[])
 
         cmd = args[0];
 
-        int ncmds = sizeof(cmds) / sizeof(struct cmd);
+        
         struct cmd *cur_cmd;
-        for (int i = 0; i < ncmds; i++)
+        for (int i = 0; i < cmds_len; i++)
         {
             cur_cmd = &cmds[i];
             if (strcmp(cmd, cur_cmd->name) == 0)
@@ -129,7 +146,7 @@ int main(int argc, char *argv[])
                 // there are no commands expecting 2 args
 
                 // since command is executed, add to history and then stop comparing
-                add_history(line);
+                // add_history(line);
                 command_found = 1;
                 break;
             }
@@ -169,7 +186,7 @@ int handle_play()
 {
     if (!mfile)
     {
-        fprintf(stderr, "Which midi file to play?\n");
+        fprintf(stderr, "File not loaded\n");
         return -1;
     }
     return write_to_server(SERVER_START_PLAYER, 0 /* not used */);
@@ -234,6 +251,14 @@ int handle_reconnect()
     return write_to_server(SERVER_RECONNECT, 0 /* not used */);
 }
 
+int handle_help()
+{
+    fprintf(stdout, "Available commands:\n");
+    for (int i = 0; i < cmds_len; i++)
+    {
+        fprintf(stdout, "%s\t\t%s\n", cmds[i].name, cmds[i].desc);
+    }
+}
 
 
 //-------------------------------------------- HELPERS
@@ -284,6 +309,7 @@ int write_to_server(enum server_control_set server_control, int value)
         perror("write");
         return -1;
     }
+    printf("wrote to server: %d, %d", server_control, value);
     return 0;
 }
 

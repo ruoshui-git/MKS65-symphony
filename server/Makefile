@@ -12,7 +12,7 @@ SRCS = server.c server_thread.c shell.c utils.c \
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
-LIBS = -pthread -lreadline -lfluidsynth
+LIBS = -pthread -lfluidsynth
 
 # name for executable
 EXE = main.out

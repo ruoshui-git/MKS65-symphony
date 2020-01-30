@@ -7,11 +7,11 @@
 
 
 # space-separated list of source files
-SRCS = client.c
+SRCS = client.c midi_player.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
-LIBS =
+LIBS = -lfluidsynth
 
 # name for executable
 EXE = client.out
