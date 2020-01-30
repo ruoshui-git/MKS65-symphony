@@ -18,7 +18,7 @@ void writer_error(char * msg)
 
 void sys_warning(char * msg)
 {
-    fprintf(stderr, "Warning: %s\n");
+    fprintf(stderr, "Warning: %s\n", msg);
 }
 
 /** 

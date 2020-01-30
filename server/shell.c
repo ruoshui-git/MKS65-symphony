@@ -62,7 +62,8 @@ struct cmd cmds[] =
         {"play", 0, "stop accepting new connections and start playing midi file; file has to be loaded", handle_play},
         {"pause", 0, "pause midi playback", handle_pause},
         {"resume", 0, "resume midi playback", handle_resume},
-        {"restart", 0, "restart midi playback with current clients", handle_restart},
+        // {"restart", 0, "restart midi playback with current clients", handle_restart},
+        // seek is also no supported
         {"loop", 0, "loop midi playback", handle_loop},
         {"noloop", 0, "don't look midi playback", handle_noloop},
         {"status", 0, "print current status of server", handle_status},
@@ -87,6 +88,7 @@ int main(int argc, char *argv[])
 
     char *cmd;
     int nwords;
+    int command_found = 0;
 
     while (1)
     {
@@ -94,12 +96,17 @@ int main(int argc, char *argv[])
         {
             continue;
         }
+        if (strlen(line) == 0)
+        {
+            puts("");
+            continue;
+        }
 
-        parse_line(line, &nwords);
+        args = parse_line(line, &nwords);
 
         cmd = args[0];
 
-        int ncmds = sizeof(cmds) / sizeof(struct cmd *);
+        int ncmds = sizeof(cmds) / sizeof(struct cmd);
         struct cmd *cur_cmd;
         for (int i = 0; i < ncmds; i++)
         {
@@ -116,7 +123,6 @@ int main(int argc, char *argv[])
                     {
                         // only command is present; no argument supplies
                         fprintf(stderr, "%s: missing argument\n", cmd);
-                        break;
                     }
                     (cur_cmd->fn)(args[1]);
                 }
@@ -124,45 +130,18 @@ int main(int argc, char *argv[])
 
                 // since command is executed, add to history and then stop comparing
                 add_history(line);
+                command_found = 1;
                 break;
             }
         }
-        // if (strcmp(cmd, "load") == 0)
-        // {
-
-        // }
-        // else if (strcmp(cmd, "play") == 0)
-        // {
-        //     /* code */
-        // }
-        // else if (strcmp(cmd, "pause") == 0)
-        // {
-        //     /* code */
-        // }
-        // else if (strcmp(cmd, "seek") == 0)
-        // {
-        //     /* code */
-        // }
-        // else if (strcmp(cmd, "restart") == 0)
-        // {
-
-        // }
-        // else if (strcmp(cmd, "help") == 0)
-        // {
-
-        // }
-        // else if (strcmp(cmd, "status") == 0)
-        // {
-
-        // }
-        // else if (strcmp(cmd, "quit") == 0)
-        // {
-
-        // }
-        // else
-        // {
-        //     fprintf(stdout, "%s: command no found", cmd);
-        // }
+        if (!command_found)
+        {
+            fprintf(stderr, "%s: command not found\n", cmd);
+        }
+        else
+        {
+            command_found = 0; // reset
+        }
     }
     return 0;
 }

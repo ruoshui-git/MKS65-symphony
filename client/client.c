@@ -110,3 +110,31 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+int recvall(int sockfd, void *buf, int *len)
+{
+    int total = 0;        // how many bytes we've received
+    int bytesleft = *len; // how many we have left to receive
+    int n;
+
+    while (total < *len)
+    {
+        n = recv(sockfd, buf + total, bytesleft, 0);
+        if (n == -1)
+        {
+            break;
+        }
+        total += n;
+        bytesleft -= n;
+        printf("bytes received: %d, bytesleft: %d\n", n, bytesleft);
+    }
+
+    *len = total; // return number actually sent here
+
+    if (n == -1)
+    {
+        perror("recv");
+    }
+
+    return n == -1 ? -1 : 0; // return -1 on failure, 0 on success
+}

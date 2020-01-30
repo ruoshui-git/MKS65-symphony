@@ -56,6 +56,8 @@ void create_midi_files();
 sig_atomic_t midi_ready = 0; // midi files are not generated until after all clients are connected
 pthread_cond_t midi_ready_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t midi_ready_cond_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t midi_play_barrier;
+int barrier_initialized = 0;
 struct tlist *clients = NULL;
 // int sockfd = -1;
 
@@ -207,6 +209,7 @@ void *main_server_thread(void *_arg)
 			// handle communication with main thread
 			// handle_control(control_fd);
 			read(control_fd, &ctl, sizeof(ctl));
+
 			if (ctl.control == SERVER_START_PLAYER)
 			{
 				create_midi_files();
@@ -214,17 +217,54 @@ void *main_server_thread(void *_arg)
 				// send files to clients
 				pthread_mutex_lock(&midi_ready_cond_mutex);
 				midi_ready = 1;
-				pthread_mutex_unlock(&midi_ready_cond_mutex);
-				pthread_cond_broadcast(&midi_ready_cond);
 
+				if (!barrier_initialized)
+				{
+					pthread_barrier_init(&midi_play_barrier, 0, clients->len + 1);
+					barrier_initialized = 1;
+				}
+
+				pthread_cond_broadcast(&midi_ready_cond);
+				pthread_mutex_unlock(&midi_ready_cond_mutex);
+				
 				
 				player_setup();
 				player_add_midi_file(mfile->fullpath);
-				// barrier here
+				pthread_barrier_wait(&midi_play_barrier);
 				// wait for some time;
 				player_play();
 
 			}
+			else if (ctl.control == SERVER_SET_PLAYER)
+			{
+				
+			}
+			else if (ctl.control == SERVER_SEEK_PLAYER)
+			{
+				sys_warning("Cannot seek due to library limitations");
+				continue;
+			}
+			else if (ctl.control == SERVER_PRINT_STATUS)
+			{
+				
+			}
+			else if (ctl.control == SERVER_RECONNECT)
+			{
+
+			}
+			else if (ctl.control == SERVER_QUIT)
+			{
+				
+			}
+			else
+			{
+
+				sys_error("Unexpected internal command");
+				// clean up
+				exit(1);
+			}
+			
+			
 		}
 		else
 		{
@@ -255,6 +295,7 @@ void *main_server_thread(void *_arg)
 			arg->midi_ready = &midi_ready;
 			arg->midi_ready_cond = &midi_ready_cond;
 			arg->midi_ready_cond_mutex = &midi_ready_cond_mutex;
+			arg->midi_play_barrier = &midi_play_barrier;
 
 			pthread_t thread = new_server_thread(arg);
 			struct tnode *node = new_tnode(thread, arg);

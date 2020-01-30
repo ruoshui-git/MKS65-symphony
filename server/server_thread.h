@@ -10,6 +10,7 @@ struct s_thread_arg
     sig_atomic_t * midi_ready;
     pthread_cond_t * midi_ready_cond;
     pthread_mutex_t * midi_ready_cond_mutex;
+    pthread_barrier_t * midi_play_barrier;
 };
 
 struct tlist
