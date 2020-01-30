@@ -5,7 +5,7 @@ struct cmd
     char * name;
     int num_args;
     char * desc;
-    void (*fn)();
+    int (*fn)();
 };
 
 #endif

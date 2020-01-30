@@ -14,7 +14,10 @@
         "midi_splitter.h": "c",
         "unistd.h": "c",
         "midi.h": "c",
-        "server_thread.h": "c"
+        "server_thread.h": "c",
+        "midi_reader.h": "c",
+        "midi_player.h": "c",
+        "fluidsynth.h": "c"
     },
     "cmake.configureOnOpen": false
 }

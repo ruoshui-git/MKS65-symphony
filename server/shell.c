@@ -13,6 +13,8 @@
 #include "midi.h"
 #include "utils.h"
 #include "shell.h"
+#include "midi_reader.h"
+
 
 /** 
  * Count number of c in str
@@ -26,9 +28,28 @@ char **parse_line(char *line, int *len_ptr);
 */
 int write_to_server(enum server_control_set server_control, int value);
 
+// free stuff
+static void cleanup();
+
+
+// Handler declarations
+int handle_load(char *filepath);
+int handle_play();
+int handle_pause();
+int handle_resume();
+int handle_restart();
+int handle_loop();
+int handle_noloop();
+int handle_seek(int value);
+int handle_status();
+int handle_quit();
+int handle_reconnect();
+
+
+
 // defined in server.c
-extern struct Mfile *mfile = NULL;
-extern char **midi_out_names = NULL;
+extern struct Mfile *mfile;
+extern char **midi_out_names;
 
 int server_fd = -1; // for writing to server
 pthread_t main_server;
@@ -146,41 +167,8 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-char **parse_line(char *line, int *len_ptr)
-{
-    // malloc the size of the number of words, separated by ' '
-    *len_ptr = count_char(line, ' ') + 1;
-    char **args = malloc(sizeof(char *) * (*len_ptr));
 
-    if (args == NULL)
-    {
-        perror("malloc");
-        exit(1);
-    }
-    int i = 0;
-    char *sep = " ";
-    args[i++] = strtok(line, sep);
-    char *token = strtok(NULL, sep);
-    while (token != NULL)
-    {
-        args[i++] = token;
-        token = strtok(NULL, sep);
-    }
-    return args;
-}
-
-int count_char(char *str, char c)
-{
-    int i, sum, len;
-    for (i = 0, sum = 0, len = strlen(str); i < len; i++)
-    {
-        if (str[i] == c)
-        {
-            sum++;
-        }
-    }
-    return sum;
-}
+// -------------------------------------------- Handlers
 
 int handle_load(char *filepath)
 {
@@ -202,7 +190,7 @@ int handle_play()
 {
     if (!mfile)
     {
-        fputs(stderr, "Which midi file to play?\n");
+        fprintf(stderr, "Which midi file to play?\n");
         return -1;
     }
     return write_to_server(SERVER_START_PLAYER, 0 /* not used */);
@@ -265,6 +253,46 @@ int handle_quit()
 int handle_reconnect()
 {
     return write_to_server(SERVER_RECONNECT, 0 /* not used */);
+}
+
+
+
+//-------------------------------------------- HELPERS
+
+char **parse_line(char *line, int *len_ptr)
+{
+    // malloc the size of the number of words, separated by ' '
+    *len_ptr = count_char(line, ' ') + 1;
+    char **args = malloc(sizeof(char *) * (*len_ptr));
+
+    if (args == NULL)
+    {
+        perror("malloc");
+        exit(1);
+    }
+    int i = 0;
+    char *sep = " ";
+    args[i++] = strtok(line, sep);
+    char *token = strtok(NULL, sep);
+    while (token != NULL)
+    {
+        args[i++] = token;
+        token = strtok(NULL, sep);
+    }
+    return args;
+}
+
+int count_char(char *str, char c)
+{
+    int i, sum, len;
+    for (i = 0, sum = 0, len = strlen(str); i < len; i++)
+    {
+        if (str[i] == c)
+        {
+            sum++;
+        }
+    }
+    return sum;
 }
 
 int write_to_server(enum server_control_set server_control, int value)

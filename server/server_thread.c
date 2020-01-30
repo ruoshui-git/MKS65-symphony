@@ -65,7 +65,8 @@ void *server_thread(void *_arg)
     if (!f)
     {
         perror("fopen");
-        pthread_exit(1);
+        int val = 1;
+        pthread_exit(&val);
     }
 
     // get file size
@@ -84,12 +85,14 @@ void *server_thread(void *_arg)
     if (ferror(f))
     {
         perror("fread");
-        pthread_exit(1);
+        int val = 1;
+        pthread_exit(&val);
     }
 
-    if (sendall(client, buf, fsize) == -1)
+    if (sendall(client, buf, &fsize) == -1)
     {
-        pthread_exit(1);
+        int val = 1;
+        pthread_exit(&val);
     }
 
     // wait for client to respond

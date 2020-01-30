@@ -48,6 +48,10 @@ void handle_control(int control_fd);
 /** Make tmp dir if it doesn't exist */
 void make_tmp_dir();
 
+/** Write out the midi files to the tmp folder */
+void create_midi_files();
+
+
 /* keeps track of the state of midi files */
 sig_atomic_t midi_ready = 0; // midi files are not generated until after all clients are connected
 pthread_cond_t midi_ready_cond = PTHREAD_COND_INITIALIZER;
