@@ -38,3 +38,6 @@ void * server_thread(void * _arg);
 struct tlist * new_tlist();
 void append_tnode(struct tlist * list, struct tnode * node);
 struct tnode * new_tnode(pthread_t thread, struct s_thread_arg * arg);
+
+void * free_tnode(struct tnode * n);
+void * free_tlist(struct tlist * l);

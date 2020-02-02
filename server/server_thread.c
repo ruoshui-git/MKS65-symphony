@@ -154,6 +154,26 @@ struct tnode *new_tnode(pthread_t thread, struct s_thread_arg *arg)
     return node;
 }
 
+void * free_tnode(struct tnode * n)
+{
+    free(n->arg);
+    free(n);
+    return NULL;
+}
+
+void * free_tlist(struct tlist * l)
+{
+    struct tnode * n = l->first, *next;
+    while (n)
+    {
+        next = n->next;
+        free_tnode(n);
+        n = next;
+    }
+    free(l);
+    return NULL;
+}
+
 /** 
  * Attempts to send all data
  * 

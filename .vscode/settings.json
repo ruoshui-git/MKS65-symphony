@@ -17,7 +17,9 @@
         "server_thread.h": "c",
         "midi_reader.h": "c",
         "midi_player.h": "c",
-        "fluidsynth.h": "c"
+        "fluidsynth.h": "c",
+        "readline.h": "c",
+        "socket.h": "c"
     },
     "cmake.configureOnOpen": false
 }

@@ -7,12 +7,12 @@
 
 
 # space-separated list of source files
-SRCS = server.c server_thread.c shell.c utils.c \
+SRCS = shell.c server_thread.c utils.c cmd_handlers.c socket.c \
 	midi_player.c midi_reader.c midi_writer.c midi_splitter.c midi.c midifile.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
-LIBS = -pthread -lfluidsynth
+LIBS = -pthread -lfluidsynth -lreadline
 
 # name for executable
 EXE = main.out

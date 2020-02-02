@@ -1,4 +1,5 @@
-#define MIDI_SOUNDFONT "../concerto-in-d-minor-mids/timbres_of_heaven.sf2"
+// #define MIDI_SOUNDFONT "../concerto-in-d-minor-mids/timbres_of_heaven.sf2"
+#define MIDI_SOUNDFONT "../timbres_of_heaven.sf2"
 
 void player_setup();
 void player_add_midi_file(char* path);
