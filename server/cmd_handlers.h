@@ -7,7 +7,7 @@ int handle_resume();
 int handle_restart();
 int handle_loop();
 int handle_noloop();
-int handle_seek(int value);
+int handle_seek(char * val);
 int handle_status();
 
 /** 
@@ -31,3 +31,6 @@ void create_midi_files();
 
 /** Make tmp dir if it doesn't exist */
 void make_tmp_dir();
+
+/** Test if a string represents an int */
+int isnum(char *s);

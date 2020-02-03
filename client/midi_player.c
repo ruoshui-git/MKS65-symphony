@@ -1,35 +1,38 @@
 #include <fluidsynth.h>
 #include "midi_player.h"
+#include "utils.h"
 
-fluid_settings_t *settings;
-fluid_synth_t *synth;
-fluid_player_t *player;
-fluid_audio_driver_t *adriver;
+fluid_settings_t *settings = NULL;
+fluid_synth_t *synth = NULL;
+fluid_player_t *player = NULL;
+fluid_audio_driver_t *adriver = NULL;
 
-int fluid_player_seek(fluid_player_t *player, int ticks) __attribute__((weak));
+// int fluid_player_seek(fluid_player_t *player, int ticks) __attribute__((weak));
 
 void player_setup()
 {
-    settings = new_fluid_settings();
-    synth = new_fluid_synth(settings);
+    if (!settings)
+        settings = new_fluid_settings();
+    if (!synth)
+        synth = new_fluid_synth(settings);
+    if (player)
+        delete_fluid_player(player);
     player = new_fluid_player(synth); // default
     // player = new_fluid_player(NULL); // no synth
 
     fluid_settings_setstr(settings, "audio.driver", "pulseaudio");
-    fluid_settings_setstr(settings, "synth.midi-channels", "256");
+    // fluid_settings_setstr(settings, "synth.midi-channels", "256");
+    fluid_settings_setstr(settings, "midi.driver", "alsa_seq");
+
 
     fluid_synth_sfload(synth, MIDI_SOUNDFONT, 1);
-    adriver = new_fluid_audio_driver(settings, synth);
+    if (!adriver)
+        adriver = new_fluid_audio_driver(settings, synth);
 }
 
 void player_add_midi_file(char *path)
 {
     fluid_player_add(player, path);
-}
-
-void player_add_midi_mem(char * buff, size_t len)
-{
-    fluid_player_add_mem(player, buff, len);
 }
 
 void player_clear_midi_files()
@@ -53,14 +56,7 @@ void player_pause()
 
 void player_seek(int tick)
 {
-    if (fluid_player_seek)
-    {
-        fluid_player_seek(player, tick);
-    }
-    else
-    {
-        sys_warning("Does not support seek due to library limitations");
-    }
+    fluid_player_seek(player, tick);
 }
 
 void player_setloop(int looping)
@@ -68,7 +64,28 @@ void player_setloop(int looping)
     fluid_player_set_loop(player, looping);
 }
 
-void sys_warning(char * msg)
+void player_cleanup()
 {
-    fprintf(stderr, "Warning: %s\n", msg);
+    if (adriver)
+        delete_fluid_audio_driver(adriver);
+    if (player)
+        delete_fluid_player(player);
+    if (synth)
+        delete_fluid_synth(synth);
+    if (settings)
+        delete_fluid_settings(settings);
+}
+
+void player_add_midi_mem(char *buff, size_t len)
+{
+    fluid_player_add_mem(player, buff, len);
+}
+
+int player_get_status()
+{
+    if (!player) return -1;
+    int status = fluid_player_get_status(player);
+    if (status == FLUID_PLAYER_DONE) return 2;
+    if (status == FLUID_PLAYER_PLAYING) return 1;
+    if (status == FLUID_PLAYER_READY) return 0;
 }

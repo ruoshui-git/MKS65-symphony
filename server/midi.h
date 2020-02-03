@@ -175,4 +175,31 @@ void append_mevent(struct Mtrack * track, struct Mevent * e);
 
 #endif // MIDI_H
 
+/** Free an Mfile
+ * @param mfile Mfile to be freed
+ * @return NULL
+*/
+void *free_Mfile(struct Mfile *mfile);
+/** 
+ * Free an Mtrack
+ * @warning called when freeing mfile, should not be called directly
+ * @param mtrack
+ * @return NULL;
+*/
+void *free_Mtrack(struct Mtrack *mtrack);
+
+/** 
+ * Free an Mevent
+ * @warning called when freeing mfile, should not be called directly
+ * @param mevent
+ * @return NULL
+*/
+void *free_Mevent(struct Mevent *e);
+
+/** 
+ * Free if it is not null
+*/
+void sfree(char * s);
+
+
 void reverse_memcpy(char * restrict dest, char * restrict src, size_t n);

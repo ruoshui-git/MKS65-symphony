@@ -48,9 +48,28 @@ gcc driver.c -lpulse -lpulse-simple
 Error in mftext: metaspecial should not have attr "type"
 
 ## Things you wish you knew before this project
-sudo apt install libfluidsynth-dev
+sudo apt install libfluidsynth-dev # NO! Not this
+It took me a long long time to get the latest version of fluidsynth, which correctly handles pause and resume, also supports seek and ticks.
+Here's how I eventually installed it.
+- I got source from here: https://launchpad.net/ubuntu/+source/fluidsynth/2.1.0-1
+- dpackage and then creating a folder
+- build with CMake: https://github.com/FluidSynth/fluidsynth/wiki/BuildingWithCMake#requirements
+  - (in fluidsynth dir)
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - make check
+  - sudo make install
+  - sudo ldconfig
+  - (add this to .bashrc or .bash_profile) export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
+    - depends on the output of "make install"
+  - sudo apt remove fluidsynth
+  - sudo apt remove libfluidsynth-dev
 
 (I don't understand why this line isn't documented and it took me so long to figure out how to get the fluidsynth lib)
+
+TODO: cmd_handlers.c:263
 
 ## Notes
 - Use .mid (MIDI) files for musical info

@@ -36,7 +36,6 @@ static void shell_cleanup();
 
 static void cb_linehandler(char *);
 static void sighandler(int);
-static void shell_exit();
 
 int sigwinch_received;
 const char *prompt = "> ";
@@ -65,8 +64,8 @@ struct cmd cmds[] =
         {"play", 0, "stop accepting new connections and start playing midi file; file has to be loaded", handle_play},
         {"pause", 0, "pause midi playback", handle_pause},
         {"resume", 0, "resume midi playback", handle_resume},
-        // {"restart", 0, "restart midi playback with current clients", handle_restart},
-        // seek is also no supported
+        {"restart", 0, "restart midi playback with current clients", handle_restart},
+        {"seek", 1, "'seek [tick] | [percent]%' - seek playback to a certain tick or percentage", handle_seek},
         {"loop", 0, "loop midi playback", handle_loop},
         {"noloop", 0, "don't loop midi playback", handle_noloop},
         {"status", 0, "print current status of server", handle_status},
@@ -79,8 +78,7 @@ const int cmds_len = sizeof(cmds) / sizeof(struct cmd);
 /* Callback function called for each line when accept-line executed, EOF
    seen, or EOF character read.  This sets a flag and returns; it could
    also call exit(3). */
-static void
-cb_linehandler(char *line)
+static void cb_linehandler(char *line)
 {
     /* Can use ^D (stty eof) or `exit' to exit. */
 
@@ -93,6 +91,7 @@ cb_linehandler(char *line)
     {
         return;
     }
+    
 
     // set up reading from stdin
     char *cmd;
@@ -115,16 +114,16 @@ cb_linehandler(char *line)
             else if (cur_cmd->num_args == 1)
             {
                 if (nwords < 2)
+                
                 {
                     // only command is present; no argument supplies
                     fprintf(stderr, "%s: missing argument\n", cmd);
+                    break;
                 }
                 (cur_cmd->fn)(args[1]);
             }
             // there are no commands expecting 2 args
 
-            // since command is executed, add to history and then stop comparing
-            add_history(line);
             command_found = 1;
             break;
         }
@@ -135,6 +134,7 @@ cb_linehandler(char *line)
     }
     else
     {
+        add_history(line);
         command_found = 0; // reset
     }
 
@@ -146,6 +146,10 @@ int main(int argc, char *argv[])
 
     sockfd = setup_server();
     setup_connections();
+
+    
+    puts("Orchestra\nType 'help' to see help messages");
+
 
     /* Handle window size changes when readline is not active and reading
      characters. */
@@ -218,17 +222,20 @@ static void session_cleanup()
 
 static void shell_cleanup()
 {
-    session_cleanup();
+    puts("Cleaning shell");
+    /* This function needs to be called to reset the terminal settings,
+        and calling it from the line handler keeps one extra prompt from
+        being displayed. */
     rl_callback_handler_remove();
+
+    session_cleanup();
     close(sockfd);
 }
 
-static void shell_exit()
+void shell_exit()
 {
     running = 0;
-    puts("Terminating server");
     handle_quit();
-    puts("Terminating shell");
     shell_cleanup();
     exit(1);
 }

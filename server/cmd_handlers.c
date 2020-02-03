@@ -15,6 +15,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <netdb.h>
+#include <ctype.h>
+
+#include <readline/readline.h>
 
 #include "shell.h"
 #include "midi.h"
@@ -166,32 +169,110 @@ int handle_play()
 int handle_pause()
 {
     player_pause();
+    return 0;
 }
 
 int handle_resume()
 {
     player_play();
+    return 0;
 }
 
 int handle_loop()
 {
     player_setloop(1);
+    return 0;
 }
 
 int handle_noloop()
 {
     player_setloop(0);
+    return 0;
+}
+
+int handle_restart()
+{
+    player_restart();
+    return 0;
+}
+
+int handle_seek(char* val)
+{
+    int n = strlen(val);
+    if (val[n-1] == '%')
+    {
+        // this is a percentage
+        val[n-1] = '\0';
+        if (!isnum(val))
+        {
+            fputs("Not a valid percentage\n", stderr);
+            return -1;
+        }
+        int p = atoi(val);
+        if (p > 100 || p < 0)
+        {
+            fputs("Percentage must be < 100 and > 0\n", stderr);
+            return -1;
+        }
+        int tick = p * player_get_total_ticks() / 100;
+        player_seek(tick);
+        return 0;
+    }
+    else
+    {
+        if (!isnum(val))
+        {
+            fputs("Not a valid tick number\n", stderr);
+            return -1;
+        }
+        player_seek(atoi(val));
+        return 0;
+    }
+    
 }
 
 int handle_status()
 {
-    printf("Num clients: %d\n", clients->len);
+    printf("-- Num clients: %d\n", clients->len);
+    if (mfile)
+    {
+        printf("-- Midi file loaded: %s\n", mfile->filename);
+    }
+    int status = player_get_status();
+    if (status == 0)
+    {
+        puts("-- Player is ready");
+    }
+    else if (status == 1)
+    {
+        puts("-- Player is playing");
+    }
+    else if (status == 2)
+    {
+        puts("-- Player has been stopped");
+    }
+    else
+    {
+        // status == -1, no player yet
+        puts(" * More status will be displayed when player starts");
+    }
+    if (status != -1)
+    {
+        int cur_tick = player_get_cur_tick();
+        int total_ticks = player_get_total_ticks();
+        // TODO: handle total_ticks == 0, which somehow means player ended
+        int p = 100 * cur_tick / total_ticks;
+        printf("-- Current playback position: %d / %d ticks, %d%%\n", cur_tick, total_ticks, p);
+    }
+    
+    
     return 1;
 }
 
 int handle_quit()
 {
-
+    
+    puts("Cleaning server");
     if (clients)
     {
         struct tnode *cur = clients->first;
@@ -202,10 +283,17 @@ int handle_quit()
         }
         free(clients);
     }
-    /* This function needs to be called to reset the terminal settings,
-        and calling it from the line handler keeps one extra prompt from
-        being displayed. */
+    if (mfile)
+    {
+        free_Mfile(mfile);
+    }
+    pthread_cond_destroy(&midi_ready_cond);
+    pthread_mutex_destroy(&midi_ready_cond_mutex);
+    if (barrier_initialized)
+        pthread_barrier_destroy(&midi_play_barrier);
+    player_cleanup();
     running = 0;
+    rl_callback_handler_remove();
     return 2;
 }
 
@@ -222,6 +310,7 @@ int handle_help()
     {
         fprintf(stdout, "%s\t\t%s\n", cmds[i].name, cmds[i].desc);
     }
+    fputs("\n\n", stdout);
 }
 
 int handle_socket(int sockfd)
@@ -332,4 +421,15 @@ void make_tmp_dir(void)
             exit(1);
         }
     }
+}
+
+
+int isnum(char *s)
+{
+    for (int i = 0, n = strlen(s); i < n; i++)
+    {
+        if (!isdigit(s[i]))
+            return 0;
+    }
+    return 1;
 }

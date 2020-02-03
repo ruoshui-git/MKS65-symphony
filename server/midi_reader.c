@@ -101,7 +101,7 @@ int loadfile(char *file)
     char * filename = strrchr(file, '/');
     if (!filename) // there's no '/' in file path
         filename = file;
-    mfile->filename = strdup(filename);
+    mfile->filename = strdup(filename + 1);
     mfile->fullpath = strdup(file);
 
     return 0;

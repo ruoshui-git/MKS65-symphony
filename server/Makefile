@@ -28,7 +28,7 @@ endif
 CSTD = gnu11 # not c11
 
 # flags to pass compiler
-CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) 
+CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) -Wl,-rpath,/usr/local/lib
 
 # compiler to use
 CC = gcc
