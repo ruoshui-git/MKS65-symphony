@@ -11,6 +11,8 @@ fluid_audio_driver_t *adriver = NULL;
 
 void player_setup()
 {
+    
+    puts("fluid version: "FLUIDSYNTH_VERSION);
     if (!settings)
         settings = new_fluid_settings();
     if (!synth)
@@ -54,6 +56,16 @@ void player_pause()
     fluid_player_stop(player);
 }
 
+int player_get_total_ticks()
+{
+    return fluid_player_get_total_ticks(player);
+}
+
+int player_get_cur_tick()
+{
+    return fluid_player_get_current_tick(player);
+}
+
 void player_seek(int tick)
 {
     fluid_player_seek(player, tick);
@@ -62,6 +74,11 @@ void player_seek(int tick)
 void player_setloop(int looping)
 {
     fluid_player_set_loop(player, looping);
+}
+
+void player_restart()
+{
+    fluid_player_seek(player, 0);
 }
 
 void player_cleanup()

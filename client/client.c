@@ -25,6 +25,8 @@
 
 int recvall(int sockfd, void *buf, unsigned int *len);
 
+int sockfd = -1; // server fd
+
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -38,63 +40,28 @@ void *get_in_addr(struct sockaddr *sa)
 
 int main(int argc, char *argv[])
 {
-	int sockfd, numbytes;
+
+	if (argc > 2) {
+	    fprintf(stderr,"usage: client [hostname (default 'localhost')]\n");
+	    exit(1);
+	}
+
+	char * server_addr = SERVER_ADDR;
+	if (argc == 2)
+	{
+		server_addr = argv[1];
+	}
+
+	connect_to(server_addr);
+
 	char buf[MAXDATASIZE];
-	struct addrinfo hints, *servinfo, *p;
-	int rv;
-	char s[INET6_ADDRSTRLEN];
 
-	// if (argc != 2) {
-	//     // fprintf(stderr,"usage: client hostname\n");
-	//     // exit(1);
-	// }
-
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-
-	if ((rv = getaddrinfo(/* argv[1] */ SERVER_ADDR, PORT, &hints, &servinfo)) != 0)
-	{
-		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-		return 1;
-	}
-
-	// loop through all the results and connect to the first we can
-	for (p = servinfo; p != NULL; p = p->ai_next)
-	{
-		if ((sockfd = socket(p->ai_family, p->ai_socktype,
-							 p->ai_protocol)) == -1)
-		{
-			perror("client: socket");
-			continue;
-		}
-
-		if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1)
-		{
-			perror("client: connect");
-			close(sockfd);
-			continue;
-		}
-
-		break;
-	}
-
-	if (p == NULL)
-	{
-		fprintf(stderr, "client: failed to connect\n");
-		return 2;
-	}
-
-	inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-			  s, sizeof s);
-	printf("client: connecting to %s\n", s);
-
-	freeaddrinfo(servinfo); // all done with this structure
+	int numbytes;
 
 	if ((numbytes = recv(sockfd, buf, 10, 0)) == -1)
 	{
 		perror("recv");
-		goto cleanup;
+		client_exit();
 	}
 
 	buf[numbytes] = '\0';
@@ -106,10 +73,10 @@ int main(int argc, char *argv[])
 	if (read(sockfd, &id, 4) == -1)
 	{
 		perror("recv");
-		goto cleanup;
+		client_exit();
 	}
 
-	puts("data received");
+	puts("Connection confirmed");
 
 	id = ntohl(id);
 
@@ -122,7 +89,7 @@ new_file:;
 	if (read(sockfd, &fsize, 4) == -1)
 	{
 		perror("read");
-		goto cleanup;
+		client_exit();
 	}
 
 	printf("size of midi file: %uld\n", fsize);
@@ -132,7 +99,7 @@ new_file:;
 	uint32_t recvsize = fsize;
 	if (recvall(sockfd, fbuff, &fsize) == -1)
 	{
-		goto cleanup;
+		client_exit();
 	}
 
 	// now we got file, set up player
@@ -146,7 +113,7 @@ new_file:;
 	if (send(sockfd, &sbuf, 1, 0) == -1)
 	{
 		perror("send");
-		goto cleanup;
+		client_exit();
 	}
 
 	// read instruction from server and exec
@@ -186,10 +153,59 @@ new_file:;
 	close(sockfd);
 
 	return 0;
+}
 
-cleanup:
-	close(sockfd);
-	exit(1);
+
+void connect_to(char * server_addr)
+{
+	struct addrinfo hints, *servinfo, *p;
+	int rv;
+	char s[INET6_ADDRSTRLEN];
+
+	
+
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if ((rv = getaddrinfo(/* argv[1] */ server_addr, PORT, &hints, &servinfo)) != 0)
+	{
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+		return 1;
+	}
+
+	// loop through all the results and connect to the first we can
+	for (p = servinfo; p != NULL; p = p->ai_next)
+	{
+		if ((sockfd = socket(p->ai_family, p->ai_socktype,
+							 p->ai_protocol)) == -1)
+		{
+			perror("client: socket");
+			continue;
+		}
+
+		if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1)
+		{
+			perror("client: connect");
+			close(sockfd);
+			continue;
+		}
+
+		break;
+	}
+
+	if (p == NULL)
+	{
+		fprintf(stderr, "client: failed to connect\n");
+		return 2;
+	}
+
+	inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
+			  s, sizeof s);
+	printf("client: connecting to %s\n", s);
+
+	freeaddrinfo(servinfo); // all done with this structure
+
 }
 
 int recvall(int sockfd, void *buf, unsigned int *len)
@@ -218,4 +234,15 @@ int recvall(int sockfd, void *buf, unsigned int *len)
 	}
 
 	return n == -1 ? -1 : 0; // return -1 on failure, 0 on success
+}
+
+static void cleanup()
+{
+	close(sockfd);
+}
+
+static void client_exit()
+{
+	cleanup();
+	exit(EXIT_FAILURE);
 }
