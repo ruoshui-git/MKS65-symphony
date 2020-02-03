@@ -70,6 +70,7 @@ struct cmd cmds[] =
         {"noloop", 0, "don't loop midi playback", handle_noloop},
         {"status", 0, "print current status of server", handle_status},
         {"quit", 0, "quit", handle_quit},
+        {"exit", 0, "quit", handle_quit},
         {"reconnect", 0, "close all current clients and connect new ones", handle_reconnect},
         {"help", 0, "print help message", handle_help}};
 
