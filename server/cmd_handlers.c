@@ -137,7 +137,9 @@ int handle_play()
         fprintf(stdout, "No clients connected, playing on server only\n");
         player_setup();
         player_add_midi_file(mfile->fullpath);
+        #ifndef SERVER_NOPLAY
         player_play();
+        #endif
     }
     else
     {
@@ -160,7 +162,9 @@ int handle_play()
         player_add_midi_file(mfile->fullpath);
         pthread_barrier_wait(&midi_play_barrier);
         // wait for some time;
+        #ifndef SERVER_NOPLAY
         player_play();
+        #endif
     }
 
     return 1;

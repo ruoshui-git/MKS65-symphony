@@ -7,7 +7,7 @@
 
 
 # space-separated list of source files
-SRCS = client.c midi_player.c
+SRCS = client.c midi_player.c socket_client.c
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
@@ -27,7 +27,7 @@ endif
 CSTD = gnu11 # not c11
 
 # flags to pass compiler
-CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) 
+CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) -I ~/mysys/include -L ~/mysys/lib64 -DSERVER_NOPLAY
 
 # compiler to use
 CC = gcc

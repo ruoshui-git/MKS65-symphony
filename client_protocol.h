@@ -10,7 +10,7 @@ enum client_protocol
     CLIENT_LOOP = 4,
     CLIENT_NOLOOP = 5,
     CLIENT_NFILE = 6, // new file
-
+    CLIENT_QUIT = 7,
     // Response code
     CLIENT_READY = 10
 };

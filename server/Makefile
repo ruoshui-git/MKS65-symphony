@@ -12,7 +12,7 @@ SRCS = shell.c server_thread.c utils.c cmd_handlers.c socket.c \
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
-LIBS = -pthread -lfluidsynth -lreadline
+LIBS = -pthread -lfluidsynth -lreadline 
 
 # name for executable
 EXE = main.out
@@ -28,7 +28,7 @@ endif
 CSTD = gnu11 # not c11
 
 # flags to pass compiler
-CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) 
+CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) -I ~/mysys/include -L ~/mysys/lib64 -DSERVER_NOPLAY
 
 # compiler to use
 CC = gcc
