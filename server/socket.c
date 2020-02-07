@@ -5,9 +5,9 @@
 #include <unistd.h>
 
 #include "socket.h"
+#include "../client_protocol.h"
 
-
-#define PORT "14440" // the port users will be connecting to
+// #define PORT "14440" // the port users will be connecting to // NOW defined in ../client_protocol.h
 
 #define BACKLOG 20 // how many pending connections queue will hold
 

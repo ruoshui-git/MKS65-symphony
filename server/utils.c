@@ -2,6 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#include <stdarg.h> // for my own xprintf
+
+
 #include "utils.h"
 
 void parser_error(char *msg)
@@ -71,4 +77,33 @@ int count_char(char *str, char c)
 int max(int a, int b)
 {
     return a > b ? a : b;
+}
+
+void my_rl_printf(char *fmt, ...)
+{
+    int need_hack = (rl_readline_state & RL_STATE_READCMD) > 0;
+    char *saved_line;
+    int saved_point;
+    if (need_hack)
+    {
+        saved_point = rl_point;
+        saved_line = rl_copy_text(0, rl_end);
+        rl_save_prompt();
+        rl_replace_line("", 0);
+        rl_redisplay();
+    }
+
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+
+    if (need_hack)
+    {
+        rl_restore_prompt();
+        rl_replace_line(saved_line, 0);
+        rl_point = saved_point;
+        rl_redisplay();
+        free(saved_line);
+    }
 }

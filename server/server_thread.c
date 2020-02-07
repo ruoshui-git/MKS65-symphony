@@ -10,6 +10,7 @@
 
 #include "server_thread.h"
 #include "../client_protocol.h"
+#include "utils.h"
 
 int sendall(int sockfd, void *buf, int *len);
 
@@ -37,6 +38,7 @@ void *server_thread(void *_arg)
     sig_atomic_t *midi_ready = arg->midi_ready;
     pthread_mutex_t *midi_ready_cond_mutex = arg->midi_ready_cond_mutex;
     pthread_cond_t *midi_ready_cond = arg->midi_ready_cond;
+    pthread_barrier_t *midi_play_barrier = arg->midi_play_barrier;
 
     ssize_t bytes_sent;
     int i;
@@ -44,7 +46,8 @@ void *server_thread(void *_arg)
     snprintf(buff, sizeof buff, "connected");
 
     // send "connected signal"
-    printf("bytes of 'connected' sent: %ld\n", send(client, buff, 10 /* strlen(buff) */, 0));
+    int sd = send(client, buff, 10 /* strlen(buff) */, 0);
+    xprintf("bytes of 'connected' sent: %ld\n", sd);
 
     // send client id, == thread id
     u_int32_t client_id = htonl(my_id);
@@ -59,6 +62,13 @@ void *server_thread(void *_arg)
         pthread_cond_wait(midi_ready_cond, midi_ready_cond_mutex);
     }
     pthread_mutex_unlock(midi_ready_cond_mutex);
+
+    // send newfile signal to client
+    char c = CLIENT_NFILE;
+    if (send(client, &c, 1, 0) == -1)
+    {
+        perror("send");
+    }
 
     // acquire file and send to client
     char *fname = get_midi_filename(my_id);
@@ -103,7 +113,8 @@ void *server_thread(void *_arg)
 
     // now file is on client side
     // call barrier and start playing
-    
+    pthread_barrier_wait(midi_play_barrier);
+
     cbuff = CLIENT_PLAY;
     if (send(client, &cbuff, 1, 0) == -1)
     {
@@ -194,7 +205,7 @@ int sendall(int sockfd, void *buf, int *len)
         }
         total += n;
         bytesleft -= n;
-        printf("bytessent: %d, bytesleft: %d\n", n, bytesleft);
+        xprintf("sendall: bytessent: %d, bytesleft: %d\n", n, bytesleft);
     }
 
     *len = total; // return number actually sent here

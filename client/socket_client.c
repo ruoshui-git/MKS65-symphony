@@ -12,6 +12,7 @@
 
 #include "const.h"
 #include "socket_client.h"
+#include "../client_protocol.h"
 
 int connect_to(char * server_addr)
 {

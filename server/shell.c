@@ -53,8 +53,21 @@ sighandler(int sig)
     }
     else if (sig == SIGINT)
     {
-        puts("quit");
-        shell_exit();
+        // condition on ^C is too complicated
+
+        // fputs("\nDo you really want to quit? y/[n] ", stdout);
+        // char c = getchar();
+        // putchar(c);
+        // putchar('\n');
+        // if (c == 'y' || c == 'Y')
+        // {
+            puts("quit");
+            shell_exit();
+        // }
+        // else
+        // {
+        //     return;
+        // }
     }
 }
 
@@ -92,7 +105,9 @@ static void cb_linehandler(char *line)
     {
         return;
     }
-    
+
+    // add line to history now before we split the string    
+    add_history(line);
 
     // set up reading from stdin
     char *cmd;
@@ -124,19 +139,17 @@ static void cb_linehandler(char *line)
                 (cur_cmd->fn)(args[1]);
             }
             // there are no commands expecting 2 args
-
             command_found = 1;
             break;
         }
     }
-    if (!command_found)
+    if (command_found)
     {
-        fprintf(stderr, "%s: command not found\n", cmd);
+        command_found = 0; // reset
     }
     else
     {
-        add_history(line);
-        command_found = 0; // reset
+        fprintf(stderr, "%s: command not found\n", cmd);
     }
 
     free(line);
@@ -161,8 +174,8 @@ int main(int argc, char *argv[])
 
     fd_set readfds, readfds_copy;
     FD_ZERO(&readfds);
-    FD_SET(fileno(rl_instream), &readfds);
     FD_SET(sockfd, &readfds);
+    FD_SET(fileno(rl_instream), &readfds);
 
     running = 1;
 
@@ -182,26 +195,17 @@ int main(int argc, char *argv[])
             rl_resize_terminal();
             sigwinch_received = 0;
         }
-        if (FD_ISSET(fileno(rl_instream), &readfds))
+        if (FD_ISSET(fileno(rl_instream), &readfds_copy))
         {
-            // line = malloc(1000);
-            // if (!fgets(line, 1000, stdin))
-            // {
-            //     perror("fgets");
-            //     free(line);
-            //     exit(EXIT_FAILURE);
-            // }
-            // line[strlen(line) - 1] = '\0'; // replace \n with \0
-
-            // if (!(line = readline("> ")))
-            // {
-            // continue;
-            // }
             rl_callback_read_char();
         }
-        else if (FD_ISSET(sockfd, &readfds)) // socket
+        else if (FD_ISSET(sockfd, &readfds_copy)) // socket
         {
             handle_socket(sockfd);
+        }
+        else
+        {
+            puts("Got unknown fd from select set");
         }
         session_cleanup();
     }

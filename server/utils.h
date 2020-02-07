@@ -23,3 +23,6 @@ char **parse_line(char *line, int *len_ptr);
 
 /** @return max of a and b */
 int max(int a, int b);
+
+#define xprintf(...) my_rl_printf(__VA_ARGS__)
+void my_rl_printf(char *fmt, ...);

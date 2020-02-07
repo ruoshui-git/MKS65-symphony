@@ -20,7 +20,9 @@
         "fluidsynth.h": "c",
         "readline.h": "c",
         "socket.h": "c",
-        "const.h": "c"
+        "const.h": "c",
+        "client_protocol.h": "c",
+        "socket_client.h": "c"
     },
     "cmake.configureOnOpen": false
 }

@@ -1,6 +1,8 @@
 #ifndef CLIENT_PROTOCOL_H
 #define CLIENT_PROTOCOL_H
 
+#define PORT "14440"
+
 enum client_protocol
 {
     CLIENT_PLAY = 0,

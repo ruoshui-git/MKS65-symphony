@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <netdb.h>
 #include <ctype.h>
+#include <stdarg.h> // for my own xprintf
 
 #include <readline/readline.h>
 
@@ -158,12 +159,17 @@ int handle_play()
         pthread_cond_broadcast(&midi_ready_cond);
         pthread_mutex_unlock(&midi_ready_cond_mutex);
 
+        #ifndef SERVER_NOPLAY
+        xprintf("server play!");
         player_setup();
         player_add_midi_file(mfile->fullpath);
+        #endif
+        puts("before wait");
         pthread_barrier_wait(&midi_play_barrier);
+        puts("after wait!");
         // wait for some time;
         #ifndef SERVER_NOPLAY
-        player_play();
+        // player_play();
         #endif
     }
 
@@ -338,8 +344,8 @@ int handle_socket(int sockfd)
               get_in_addr((struct sockaddr *)&their_addr),
               s, sizeof s);
 
-    fprintf(stdout, "server: got connection from %s\n", s);
-    fflush(stdout);
+    xprintf("server: got connection from %s\n", s);
+    
 
     struct s_thread_arg *arg = malloc(sizeof(struct s_thread_arg));
     arg->socket = client_fd;
@@ -353,7 +359,7 @@ int handle_socket(int sockfd)
     struct tnode *node = new_tnode(thread, arg);
     append_tnode(clients, node);
 
-    printf("num threads: %d\n", clients->len);
+    xprintf("num threads: %d\n", clients->len);
 
     tid++;
 }
@@ -364,7 +370,7 @@ int handle_socket(int sockfd)
 void create_midi_files()
 {
     accepting_clients = 0;
-    puts("server: no longer accepting connections");
+    xprintf("server: no longer accepting connections\n");
 
     midi_ready = 0; // (re)set midi_file conditions
     // set up files
@@ -394,9 +400,9 @@ void make_tmp_dir(void)
     if (!tmp_dir)
     {
         char *wd = getcwd(NULL, 0);
-        tmp_dir = malloc(strlen(wd) + 4); // wd + "tmp/"
+        tmp_dir = malloc(strlen(wd) + 5); // wd + "/tmp/"
         strcpy(tmp_dir, wd);
-        strcat(tmp_dir, "tmp/");
+        strcat(tmp_dir, "/tmp/");
         free(wd);
     }
 
@@ -407,7 +413,7 @@ void make_tmp_dir(void)
         if (errno = ENOENT)
         {
             // tmp dir doesn't exist
-            mkdir(tmp_dir, 641);
+            mkdir(tmp_dir, 0641);
         }
         else
         {

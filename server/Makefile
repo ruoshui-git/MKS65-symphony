@@ -28,7 +28,7 @@ endif
 CSTD = gnu11 # not c11
 
 # flags to pass compiler
-CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) -I ~/mysys/include -L ~/mysys/lib64 -DSERVER_NOPLAY
+CFLAGS = $(DEBUG_FLAG) -std=$(CSTD) -I ~/mysys/include -L ~/mysys/lib64 -L ~/mysys/lib -DSERVER_NOPLAY
 
 # compiler to use
 CC = gcc
