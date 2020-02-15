@@ -37,6 +37,9 @@ int main(int argc, char *argv[])
 	    exit(1);
 	}
 
+	// set up audio driver here
+	player_setup();
+
 	char * server_addr = SERVER_ADDR;
 	if (argc == 2)
 	{
@@ -105,7 +108,7 @@ int main(int argc, char *argv[])
 				client_exit();
 			}
 			// now we got file, set up player
-			player_setup();
+			// player_setup(); let's set up in the beginning
 			player_add_midi_mem(fbuff, fsize);
 
 			// signal ready

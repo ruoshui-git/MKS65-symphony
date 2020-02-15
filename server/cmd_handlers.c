@@ -153,6 +153,7 @@ int handle_play()
         if (!barrier_initialized)
         {
             pthread_barrier_init(&midi_play_barrier, 0, clients->len + 1);
+            printf("barrier init with %d thread\n", clients->len + 1);
             barrier_initialized = 1;
         }
 

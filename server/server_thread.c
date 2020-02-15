@@ -113,7 +113,9 @@ void *server_thread(void *_arg)
 
     // now file is on client side
     // call barrier and start playing
+    printf("thread %d before wait\n", my_id);
     pthread_barrier_wait(midi_play_barrier);
+    printf("thread %d after wait\n", my_id);
 
     cbuff = CLIENT_PLAY;
     if (send(client, &cbuff, 1, 0) == -1)

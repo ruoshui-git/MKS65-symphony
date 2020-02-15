@@ -48,6 +48,7 @@ void player_clear_midi_files()
 
 void player_play()
 {
+    puts("Let's play. Hearing sound?");
     fluid_player_play(player);
 }
 
